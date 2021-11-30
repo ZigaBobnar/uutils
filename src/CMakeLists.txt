@@ -4,6 +4,8 @@ add_library(${PROJECT_NAME}
     uutils/checksum.cpp
     uutils/dynamic_value.c
     uutils/dynamic_value.cpp
+    uutils/fifo.c
+    uutils/fifo.cpp
 )
 add_library(uutils::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
