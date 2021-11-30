@@ -1,0 +1,30 @@
+#
+# Unit testing
+#
+enable_testing()
+
+set(INSTALL_GTEST OFF)
+set(gtest_force_shared_crt ON)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/googletest ${CMAKE_CURRENT_BINARY_DIR}/googletest)
+
+#
+# Add unit tests executable
+#
+add_executable(uutils_tests
+    main.cpp
+
+    uutils/test_checksum.cpp
+    uutils/test_dynamic_value.cpp
+)
+
+target_link_libraries(uutils_tests
+    PUBLIC
+        uutils
+    PRIVATE
+        gtest
+)
+
+add_test(
+    NAME uutils_tests
+    COMMAND uutils_tests
+)
