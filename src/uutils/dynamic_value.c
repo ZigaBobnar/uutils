@@ -8,7 +8,7 @@ static const uint64_t preamble_2b_mode = ((uint64_t)1) << 15;
 static const uint64_t offset_2b_mode = ((uint64_t)0x80);
 static const uint64_t offset_4b_mode = ((uint64_t)0x4080);
 
-uint64_t dynamic_parse(uint64_t input, uint8_t* dynamic_size_out) {
+uint64_t dynamic_parse(const uint64_t input, uint8_t* dynamic_size_out) {
     uint8_t dynamic_size = ((input & preamble_4b_mode) == preamble_4b_mode) ? 4 :
         ((input & preamble_2b_mode) == preamble_2b_mode) ? 2 :
         1;
@@ -23,7 +23,7 @@ uint64_t dynamic_parse(uint64_t input, uint8_t* dynamic_size_out) {
         0;
 }
 
-uint64_t dynamic_parse_buffer(uint8_t* input, uint8_t** out_ptr) {
+uint64_t dynamic_parse_buffer(const uint8_t* input, uint8_t** out_ptr) {
     uint64_t value = *input;
 
     uint8_t* pos = input;
@@ -49,14 +49,14 @@ uint64_t dynamic_parse_buffer(uint8_t* input, uint8_t** out_ptr) {
     return value;
 }
 
-uint8_t dynamic_parse_get_required_bytes(uint8_t first_byte_input) {
+uint8_t dynamic_parse_get_required_bytes(const uint8_t first_byte_input) {
     return (first_byte_input & 0b11100000) == 0b11100000 ? 8 :
         (first_byte_input & 0b11000000) == 0b11000000 ? 4 :
         (first_byte_input & 0b10000000) == 0b10000000 ? 2 :
         1;
 }
 
-uint64_t dynamic_serialize(uint64_t value, uint8_t* written_bytes) {
+uint64_t dynamic_serialize(const uint64_t value, uint8_t* written_bytes) {
     uint8_t dynamic_size = dynamic_serialize_get_required_bytes(value);
     if (written_bytes != NULL) {
         *written_bytes = dynamic_size;
@@ -75,7 +75,7 @@ uint64_t dynamic_serialize(uint64_t value, uint8_t* written_bytes) {
     return 0;
 }
 
-uint8_t dynamic_serialize_get_required_bytes(uint64_t value) {
+uint8_t dynamic_serialize_get_required_bytes(const uint64_t value) {
     return (value > 0x2000407F) ? 8 :
         (value >= offset_4b_mode) ? 4 :
         (value >= offset_2b_mode) ? 2 :

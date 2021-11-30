@@ -35,7 +35,7 @@ __EXTERN_C_BEGIN
  * @param out_ptr The pointer to where the dynamic size will be written.
  * @returns Parsed value.
  */
-uint64_t dynamic_parse(uint64_t input, uint8_t* dynamic_size_out);
+uint64_t dynamic_parse(const uint64_t input, uint8_t* dynamic_size_out);
 
 /**
  * Parses the dynamic value from buffer.
@@ -43,14 +43,14 @@ uint64_t dynamic_parse(uint64_t input, uint8_t* dynamic_size_out);
  * @param out_ptr The pointer to where the end address of dynamic value will be written.
  * @returns Parsed value.
  */
-uint64_t dynamic_parse_buffer(uint8_t* input, uint8_t** out_ptr);
+uint64_t dynamic_parse_buffer(const uint8_t* input, uint8_t** out_ptr);
 
 /**
  * Calculates the required bytes to parse the value.
  * @param first_byte_input First byte of the input (encoded) value.
  * @returns The required bytes.
  */
-uint8_t dynamic_parse_get_required_bytes(uint8_t first_byte_input);
+uint8_t dynamic_parse_get_required_bytes(const uint8_t first_byte_input);
 
 /**
  * Converts the value into dynamic value. The result is returned as single value that can be bit-shifted to obtain each byte.
@@ -58,14 +58,14 @@ uint8_t dynamic_parse_get_required_bytes(uint8_t first_byte_input);
  * @param  written_bytes The pointer to where the number of required bytes will be written.
  * @returns Combined converted value.
  */
-uint64_t dynamic_serialize(uint64_t value, uint8_t* written_bytes);
+uint64_t dynamic_serialize(const uint64_t value, uint8_t* written_bytes);
 
 /**
  * Calculates the required bytes to serialize the value into dynamic value.
  * @param value The input value.
  * @returns The required bytes count.
  */
-uint8_t dynamic_serialize_get_required_bytes(uint64_t value);
+uint8_t dynamic_serialize_get_required_bytes(const uint64_t value);
 
 __EXTERN_C_END
 

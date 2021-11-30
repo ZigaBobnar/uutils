@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "uutils/dynamic_value.h"
+#include "uutils/dynamic_value.hpp"
 
 struct dynamic_test_data {
     uint64_t real_value;
@@ -102,4 +103,30 @@ TEST_P(DynamicValueTest, integration_test) {
     uint64_t reparsed_value = dynamic_parse(serialized_dynamic, &serialized_size);
     EXPECT_EQ(data.real_value, reparsed_value);
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
+}
+
+TEST_P(DynamicValueTest, dynamic_split_to_bytes) {
+    dynamic_test_data data = GetParam();
+
+    std::vector<uint8_t> result = dynamic_split_to_bytes(data.dynamic_value);
+    EXPECT_EQ(data.dynamic_size, result.size());
+}
+
+TEST_P(DynamicValueTest, integration_test_vector_interface) {
+    dynamic_test_data data = GetParam();
+
+    std::vector<uint8_t> input_data = dynamic_split_to_bytes(data.dynamic_value);
+    EXPECT_EQ(data.dynamic_size, input_data.size());
+
+    std::tuple<uint64_t, uint8_t> parsed_value = dynamic_parse(input_data);
+    EXPECT_EQ(data.real_value, std::get<0>(parsed_value));
+    EXPECT_EQ(data.dynamic_size, std::get<1>(parsed_value));
+
+    std::vector<uint8_t> serialized = dynamic_serialize_to_vector(std::get<0>(parsed_value));
+    EXPECT_EQ(input_data, serialized);
+    EXPECT_EQ(data.dynamic_size, serialized.size());
+
+    std::tuple<uint64_t, uint8_t> reparsed_value = dynamic_parse(serialized);
+    EXPECT_EQ(data.real_value, std::get<0>(reparsed_value));
+    EXPECT_EQ(data.dynamic_size, std::get<1>(reparsed_value));
 }
