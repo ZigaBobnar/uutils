@@ -41,7 +41,7 @@ INSTANTIATE_TEST_SUITE_P(DynamicValueDataTests, DynamicValueTest, testing::Value
     dynamic_test_data { 0x2000407F, 0xDFFFFFFF, 4 }
 ));
 
-TEST_P(DynamicValueTest, dynamic_parse_direct_input) {
+TEST_P(DynamicValueTest, Parse_DirectInput) {
     dynamic_test_data data = GetParam();
 
     uint8_t dynamic_size;
@@ -49,7 +49,7 @@ TEST_P(DynamicValueTest, dynamic_parse_direct_input) {
     EXPECT_EQ(data.dynamic_size, dynamic_size);
 }
 
-TEST_P(DynamicValueTest, dynamic_parse_buffer) {
+TEST_P(DynamicValueTest, Parse_Buffer) {
     dynamic_test_data data = GetParam();
     uint8_t buffer[9];
     uint8_t* buffer_pos = nullptr;
@@ -59,13 +59,13 @@ TEST_P(DynamicValueTest, dynamic_parse_buffer) {
     EXPECT_EQ(data.dynamic_size, buffer_pos - buffer + 1);
 }
 
-TEST_P(DynamicValueTest, dynamic_parse_no_buffer_reference) {
+TEST_P(DynamicValueTest, Parse_NoBufferReference) {
     dynamic_test_data data = GetParam();
 
     EXPECT_EQ(data.real_value, dynamic_parse(data.dynamic_value, nullptr));
 }
 
-TEST_P(DynamicValueTest, dynamic_parse_required_bytes) {
+TEST_P(DynamicValueTest, Parse_RequiredBytes) {
     dynamic_test_data data = GetParam();
     uint8_t buffer[9];
     test_place_dynamic(data.dynamic_value, data.dynamic_size, buffer);
@@ -73,7 +73,7 @@ TEST_P(DynamicValueTest, dynamic_parse_required_bytes) {
     EXPECT_EQ(data.dynamic_size, dynamic_parse_get_required_bytes(buffer[0]));
 }
 
-TEST_P(DynamicValueTest, dynamic_serialize) {
+TEST_P(DynamicValueTest, Serialize) {
     dynamic_test_data data = GetParam();
 
     uint8_t written_bytes;
@@ -81,13 +81,13 @@ TEST_P(DynamicValueTest, dynamic_serialize) {
     EXPECT_EQ(data.dynamic_size, written_bytes);
 }
 
-TEST_P(DynamicValueTest, dynamic_serialize_required_bytes) {
+TEST_P(DynamicValueTest, SerializeRequiredBytes) {
     dynamic_test_data data = GetParam();
 
     EXPECT_EQ(data.dynamic_size, dynamic_serialize_get_required_bytes(data.real_value));
 }
 
-TEST_P(DynamicValueTest, integration_test) {
+TEST_P(DynamicValueTest, IntegrationTest) {
     dynamic_test_data data = GetParam();
     uint8_t buffer[9];
     test_place_dynamic(data.dynamic_value, data.dynamic_size, buffer);
@@ -105,14 +105,14 @@ TEST_P(DynamicValueTest, integration_test) {
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
 }
 
-TEST_P(DynamicValueTest, dynamic_split_to_bytes) {
+TEST_P(DynamicValueTest, splitToBytes) {
     dynamic_test_data data = GetParam();
 
     std::vector<uint8_t> result = dynamic_split_to_bytes(data.dynamic_value);
     EXPECT_EQ(data.dynamic_size, result.size());
 }
 
-TEST_P(DynamicValueTest, integration_test_vector_interface) {
+TEST_P(DynamicValueTest, IntegrationTest_VectorInterface) {
     dynamic_test_data data = GetParam();
 
     std::vector<uint8_t> input_data = dynamic_split_to_bytes(data.dynamic_value);

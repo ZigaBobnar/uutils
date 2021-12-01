@@ -1,4 +1,5 @@
 add_library(${PROJECT_NAME}
+    uutils/uproto/uproto.c
     uutils/common.c
     uutils/checksum.c
     uutils/checksum.cpp

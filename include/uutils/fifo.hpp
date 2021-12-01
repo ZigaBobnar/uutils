@@ -12,7 +12,7 @@ public:
     }
 
     inline ~fifo() {
-        fifo_destroy(_fifo);
+        fifo_destroy(&_fifo);
     }
 
     inline fifo_t* get() {
@@ -22,8 +22,8 @@ public:
     inline std::vector<uint8_t> read(size_t n) {
         std::vector<uint8_t> result;
 
-        result.reserve(n);
-        size_t count = fifo_read(_fifo, result.data(), n);
+        result.resize(n);
+        size_t count = fifo_read(_fifo, &result[0], n);
         result.resize(count);
 
         return result;

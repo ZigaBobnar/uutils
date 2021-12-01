@@ -10,7 +10,6 @@
  * The notation for data size is as such: [1b,2b,4b,8b], meaning data can grow from simple 8-bit (1 byte) value all the way to 64-bits (8 bytes).
  * In reality the value notation is a bit misleading as in 8-bit value the MSB (most significant bit) is used to switch to next type. This means in 1b mode, there are 7 bits available for data.
  * Once we expand to 2b value, the MSB must be 1, and for further expansion the bit next to MSB will be used to toggle the 4b mode.
- * The limit to how big the data type can be needs to be defined and not changed to not break compatibility. So whenever we expect smaller length variable length we can hardlimit it to reduce the amount of wasted bits.
  * To maximize the available values, the duplicated values are removed (when we overflow from one mode to next, it resumes from the last number) at cost of readability (we need a converter to convert back to actual value).
  * After the value is decoded, it will have been stripped of extra bits, so only actual data is represented.
  *  *Due to not being needed ATM, 8b mode has not been implemented!*

@@ -23,21 +23,21 @@ INSTANTIATE_TEST_SUITE_P(ChecksumDataTests, ChecksumTest, testing::Values(
     checksum_test_data { { 127, 128 }, 255 }
 ));
 
-TEST_P(ChecksumTest, UseVectorIterators) {
+TEST_P(ChecksumTest, Simple_UseVectorIterators) {
     checksum_test_data data = GetParam();
 
     uint8_t result = checksum_simple(&data.data[0], data.data.size());
     ASSERT_EQ(data.result, result);
 }
 
-TEST_P(ChecksumTest, VectorInterface) {
+TEST_P(ChecksumTest, Simple_VectorInterface) {
     checksum_test_data data = GetParam();
 
     uint8_t result = checksum_simple(data.data);
     ASSERT_EQ(data.result, result);
 }
 
-TEST_F(ChecksumTest, SimpleArrayChecksum) {
+TEST_F(ChecksumTest, Simple_ArrayChecksum) {
     uint8_t data[] = { 1, 2, 3, 4, 5, 6 };
 
     uint8_t result = checksum_simple(data, 6);
@@ -50,14 +50,14 @@ TEST_F(ChecksumTest, SimpleArrayChecksum) {
     ASSERT_EQ(0, result);
 }
 
-TEST_F(ChecksumTest, Overflows) {
+TEST_F(ChecksumTest, Simple_Overflows) {
     vec_data = {245, 255, 134, 151};
 
     uint8_t result = checksum_simple(&vec_data[0], vec_data.size());
     ASSERT_EQ(17, result);
 }
 
-TEST_F(ChecksumTest, CombineChecksum) {
+TEST_F(ChecksumTest, Simple_CombineChecksum) {
     vec_data = { 0, 1, 2, 3, 4, 5 };
     uint8_t starting_checksum = 43;
 
@@ -73,7 +73,7 @@ TEST_F(ChecksumTest, CombineChecksum) {
     ASSERT_EQ(42, result);
 }
 
-TEST_F(ChecksumTest, CombineChecksumVectorInterface) {
+TEST_F(ChecksumTest, Simple_CombineChecksum_VectorInterface) {
     vec_data = { 0, 1, 2, 3, 4, 5 };
     uint8_t starting_checksum = 43;
 

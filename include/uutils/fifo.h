@@ -40,9 +40,9 @@ fifo_t* fifo_create(size_t queue_size);
 
 /**
  * Destroy a fifo structure.
- * @param fifo Fifo structure
+ * @param fifo_ptr The reference to pointer to the fifo structure
  */
-void fifo_destroy(fifo_t* fifo);
+void fifo_destroy(fifo_t** fifo_ptr);
 
 /**
  * Read from fifo buffer

@@ -10,9 +10,10 @@ fifo_t* fifo_create(size_t queue_size) {
     return fifo;
 }
 
-void fifo_destroy(fifo_t* fifo) {
-    free(fifo->buffer_start);
-    free(fifo);
+void fifo_destroy(fifo_t** fifo_ptr) {
+    free((*fifo_ptr)->buffer_start);
+    free(*fifo_ptr);
+    *fifo_ptr = NULL;
 }
 
 size_t fifo_read(fifo_t* fifo, uint8_t* data_buffer, size_t n) {
