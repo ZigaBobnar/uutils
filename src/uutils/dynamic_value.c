@@ -23,7 +23,7 @@ uint64_t dynamic_parse(const uint64_t input, uint8_t* dynamic_size_out) {
         0;
 }
 
-uint64_t dynamic_parse_buffer(const uint8_t* input, uint8_t** out_ptr) {
+uint64_t dynamic_parse_buffer(uint8_t* input, uint8_t** out_ptr) {
     uint64_t value = *input;
 
     uint8_t* pos = input;

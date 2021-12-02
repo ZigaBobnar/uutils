@@ -42,7 +42,7 @@ uint64_t dynamic_parse(const uint64_t input, uint8_t* dynamic_size_out);
  * @param out_ptr The pointer to where the end address of dynamic value will be written.
  * @returns Parsed value.
  */
-uint64_t dynamic_parse_buffer(const uint8_t* input, uint8_t** out_ptr);
+uint64_t dynamic_parse_buffer(uint8_t* input, uint8_t** out_ptr);
 
 /**
  * Calculates the required bytes to parse the value.

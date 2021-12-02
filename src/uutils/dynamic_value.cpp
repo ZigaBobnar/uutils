@@ -1,10 +1,10 @@
 #include "uutils/dynamic_value.hpp"
 
-std::tuple<uint64_t, uint8_t> dynamic_parse(const std::vector<uint8_t>& input) {
+std::tuple<uint64_t, uint8_t> dynamic_parse(std::vector<uint8_t>& input) {
     uint8_t* output_ptr;
 
-    uint64_t result = dynamic_parse_buffer(input.data(), &output_ptr);
-    
+    uint64_t result = dynamic_parse_buffer(&input[0], &output_ptr);
+
     return std::make_tuple(std::move(result), output_ptr - input.data() + 1);
 }
 

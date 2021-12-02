@@ -101,7 +101,7 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
         }
         break;
     }
-    case uproto_message_parser_state_payload:
+    case uproto_message_parser_state_payload: {
         static size_t payload_position = 0;
         static size_t message_payload_length = 0;
 
@@ -122,6 +122,7 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
         }
 
         break;
+    }
     case uproto_message_parser_state_checksum:
         runtime->parsing_message->checksum = value;
         runtime->state = uproto_message_parser_state_message_end;

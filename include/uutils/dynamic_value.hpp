@@ -11,7 +11,7 @@
  * @param input Input vector.
  * @returns Tuple that contains parsed value and the required dynamic serialized length used by this value.
  */
-std::tuple<uint64_t, uint8_t> dynamic_parse(const std::vector<uint8_t>& input);
+std::tuple<uint64_t, uint8_t> dynamic_parse(std::vector<uint8_t>& input);
 
 /**
  * Converts the value into dynamic value. The result is vector of bytes that can be parsed again.

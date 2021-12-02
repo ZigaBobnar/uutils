@@ -64,7 +64,7 @@ public:
         return fifo_write_single(_fifo, value);
     }
 
-    inline bool reset() {
+    inline void reset() {
         fifo_reset(_fifo);
     }
 
