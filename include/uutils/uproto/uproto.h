@@ -28,6 +28,8 @@
  *
  */
 
+__EXTERN_C_BEGIN
+
 const static uint16_t uproto_runtime_version_major = 0x00;
 const static uint16_t uproto_runtime_version_minor = 0x00;
 const static uint16_t uproto_runtime_version_patch = 0x01;
@@ -39,7 +41,8 @@ const static uint8_t message_property_request_response_mask = 0x1;
 const static uint8_t uproto_message_properties_current_empty_mask = 0b11111110;
 
 typedef enum {
-    uproto_message_ok = 0,
+    uproto_message_unknown = 0,
+    uproto_message_ok,
     uproto_message_parsing,
     uproto_message_unsupported,
     uproto_message_length_invalid,
@@ -60,7 +63,7 @@ typedef struct {
 } uproto_message_t;
 
 typedef enum {
-    uproto_message_parser_state_message_start,
+    uproto_message_parser_state_message_start = 0,
     uproto_message_parser_state_message_params,
     uproto_message_parser_state_resource_id,
     uproto_message_parser_state_payload_length,
@@ -83,12 +86,14 @@ typedef struct {
     uproto_message_parser_state state;
 } uproto_parser_runtime_t;
 
-uproto_message_t* uproto_message_init();
+uproto_message_t* uproto_message_create();
 void uproto_message_destroy(uproto_message_t* message);
 bool uproto_message_is_valid(const uproto_message_t* message);
 
 uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t* runtime, const uint8_t value);
 uproto_message_parser_result uproto_parser_parse_multi(uproto_parser_runtime_t* runtime, const uint8_t* buffer, const size_t length);
 bool uproto_parser_has_message_ready(uproto_parser_runtime_t* runtime);
+
+__EXTERN_C_END
 
 #endif  // UUTILS_UPROTO_UPROTO_H_
