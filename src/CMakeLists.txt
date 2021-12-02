@@ -1,5 +1,8 @@
 add_library(${PROJECT_NAME}
+    uutils/uproto/message.c
+    uutils/uproto/parser.c
     uutils/uproto/uproto.c
+
     uutils/common.c
     uutils/checksum.c
     uutils/checksum.cpp

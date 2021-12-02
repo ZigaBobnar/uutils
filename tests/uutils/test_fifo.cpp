@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-
 #include "uutils/fifo.h"
 #include "uutils/fifo.hpp"
 

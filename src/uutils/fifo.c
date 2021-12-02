@@ -11,7 +11,12 @@ fifo_t* fifo_create(size_t queue_size) {
 }
 
 void fifo_destroy(fifo_t** fifo_ptr) {
+    if (fifo_ptr == NULL || *fifo_ptr == NULL) {
+        return;
+    }
+
     free((*fifo_ptr)->buffer_start);
+
     free(*fifo_ptr);
     *fifo_ptr = NULL;
 }
