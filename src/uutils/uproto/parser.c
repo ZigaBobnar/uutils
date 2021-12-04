@@ -36,12 +36,12 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
             runtime->parsing_message = uproto_message_create();
             runtime->parsing_message->parse_status = uproto_message_status_parsing;
 
-            runtime->state = uproto_message_parser_state_message_params;
+            runtime->state = uproto_message_parser_state_message_properties;
         }
         break;
-    case uproto_message_parser_state_message_params:
+    case uproto_message_parser_state_message_properties:
         runtime->parsing_message->message_properties = value;
-        
+
         runtime->state = uproto_message_parser_state_resource_id;
         break;
     case uproto_message_parser_state_resource_id: {
@@ -124,8 +124,15 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
         break;
     }
     case uproto_message_parser_state_checksum:
+        if (!uproto_message_has_checksum(runtime->parsing_message)) {
+            runtime->state = uproto_message_end;
+
+            return uproto_parser_parse_single(runtime, value);
+        }
+
         runtime->parsing_message->checksum = value;
         runtime->state = uproto_message_parser_state_message_end;
+
         break;
     case uproto_message_parser_state_message_end:
         runtime->ready_message = runtime->parsing_message;
@@ -152,4 +159,16 @@ uproto_message_parser_result uproto_parser_parse_multi(uproto_parser_runtime_t* 
 
 bool uproto_parser_has_message_ready(uproto_parser_runtime_t* runtime) {
     return runtime->ready_message != NULL;
+}
+
+uproto_message_t* uproto_parser_get_ready_message(uproto_parser_runtime_t* runtime) {
+    if (runtime->ready_message == NULL) {
+        return NULL;
+    }
+
+    // TODO: TESTS!!
+    uproto_parser_runtime_t* message = runtime->ready_message;
+    runtime->ready_message = NULL;
+
+    return message;
 }

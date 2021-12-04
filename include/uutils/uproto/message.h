@@ -9,8 +9,9 @@
  * [1b] message_start = 0b00110011          -> uproto message start and type designator
  *                                              If the message start is not recognized, it will be discarded.
  *
- * [1b] message_params = 0b0000000r         -> The message parameters.
+ * [1b] message_params = 0b000000cr         -> The message parameters.
  *                                              r specifies whether the message is request (r==0) or response (r==1)
+ *                                              c specifies whether the message shall contain the checksum
  *
  * [1b...4b] resource_id                    -> The resource ID, first 128 (0-127) resource IDs are reserved for protocol use, anything above that can be used by application code.
  *
@@ -33,19 +34,14 @@ __EXTERN_C_BEGIN
 const static uint8_t uproto_message_start = 0b00110011;
 const static uint8_t uproto_message_end = 0b11001100;
 
-const static uint8_t uproto_message_property_request_response_mask = 0x1;
-const static uint8_t uproto_message_properties_current_empty_mask = 0b11111110;
+const static uint8_t uproto_message_property_request_response_mask = 0b00000001;
+const static uint8_t uproto_message_property_skip_checksum_mask = 0b00000010;
 
 typedef enum {
     uproto_message_status_unknown = 0,
     uproto_message_status_ok,
     uproto_message_status_parsing,
-    uproto_message_status_unsupported,
-    uproto_message_status_length_invalid,
-    uproto_message_status_start_invalid,
     uproto_message_status_end_invalid,
-    uproto_message_status_payload_length_mismatch,
-    uproto_message_status_checksum_mismatch,
 } uproto_parse_status;
 
 struct uproto_message_t {
@@ -78,6 +74,17 @@ void uproto_message_destroy(uproto_message_t** message_ptr);
  * @returns Whether the message instance is valid.
  */
 bool uproto_message_is_valid(const uproto_message_t* message);
+
+bool uproto_message_is_request(uproto_message_t* message);
+bool uproto_message_is_response(uproto_message_t* message);
+
+void uproto_message_set_as_request_type(uproto_message_t* message);
+void uproto_message_set_as_response_type(uproto_message_t* message);
+
+bool uproto_message_has_checksum(uproto_message_t* message);
+bool uproto_message_skips_checksum(uproto_message_t* message);
+uint8_t uproto_message_calculate_checksum(uproto_message_t* message);
+bool uproto_message_is_checksum_valid(uproto_message_t* message, uint8_t checksum);
 
 __EXTERN_C_END
 

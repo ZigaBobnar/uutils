@@ -69,7 +69,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageStart) {
     uproto_parser_runtime_t* runtime = uproto_parser_create();
 
     EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(runtime, uproto_message_start));
-    EXPECT_EQ(uproto_message_parser_state_message_params, runtime->state);
+    EXPECT_EQ(uproto_message_parser_state_message_properties, runtime->state);
     ASSERT_FALSE(runtime->parsing_message == NULL);
     EXPECT_EQ(uproto_message_status_parsing, runtime->parsing_message->parse_status);
     EXPECT_FALSE(uproto_parser_has_message_ready(runtime));
@@ -99,7 +99,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageStart_DelayedStart) {
     }
 
     EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(runtime, uproto_message_start));
-    EXPECT_EQ(uproto_message_parser_state_message_params, runtime->state);
+    EXPECT_EQ(uproto_message_parser_state_message_properties, runtime->state);
     ASSERT_FALSE(runtime->parsing_message == NULL);
     EXPECT_EQ(uproto_message_status_parsing, runtime->parsing_message->parse_status);
     EXPECT_FALSE(uproto_parser_has_message_ready(runtime));
@@ -107,7 +107,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageStart_DelayedStart) {
     uproto_parser_destroy(&runtime);
 }
 
-TEST_F(UprotoParserTests, ParseSingle_MessageParams_RequestMessage) {
+TEST_F(UprotoParserTests, ParseSingle_MessageProperties_RequestMessage) {
     uproto_parser_runtime_t* runtime = uproto_parser_create();
     uproto_parser_parse_single(runtime, uproto_message_start);
 
@@ -121,7 +121,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageParams_RequestMessage) {
     uproto_parser_destroy(&runtime);
 }
 
-TEST_F(UprotoParserTests, ParseSingle_MessageParams_ResponseMessage) {
+TEST_F(UprotoParserTests, ParseSingle_MessageProperties_ResponseMessage) {
     uproto_parser_runtime_t* runtime = uproto_parser_create();
     uproto_parser_parse_single(runtime, uproto_message_start);
 
@@ -131,6 +131,28 @@ TEST_F(UprotoParserTests, ParseSingle_MessageParams_ResponseMessage) {
     EXPECT_EQ(uproto_message_status_parsing, runtime->parsing_message->parse_status);
     EXPECT_FALSE(uproto_parser_has_message_ready(runtime));
     EXPECT_EQ(0x01, runtime->parsing_message->message_properties);
+
+    uproto_parser_destroy(&runtime);
+}
+
+TEST_F(UprotoParserTests, ParseSingle_MessageProperties_ChecksumEnabled) {
+    uproto_parser_runtime_t* runtime = uproto_parser_create();
+    uproto_parser_parse_single(runtime, uproto_message_start);
+
+    EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(runtime, 0b00000000));
+    EXPECT_TRUE(uproto_message_has_checksum(runtime->parsing_message));
+    EXPECT_FALSE(uproto_message_skips_checksum(runtime->parsing_message));
+
+    uproto_parser_destroy(&runtime);
+}
+
+TEST_F(UprotoParserTests, ParseSingle_MessageProperties_ChecksumDisabled) {
+    uproto_parser_runtime_t* runtime = uproto_parser_create();
+    uproto_parser_parse_single(runtime, uproto_message_start);
+
+    EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(runtime, 0b00000010));
+    EXPECT_FALSE(uproto_message_has_checksum(runtime->parsing_message));
+    EXPECT_TRUE(uproto_message_skips_checksum(runtime->parsing_message));
 
     uproto_parser_destroy(&runtime);
 }
@@ -323,4 +345,15 @@ TEST_F(UprotoParserTests, ParseSingle_MessageEnd_InvalidEnd) {
     EXPECT_EQ(uproto_message_parser_state_message_start, runtime->state);
 
     uproto_parser_destroy(&runtime);
+}
+
+TEST_F(UprotoParserTests, GetReadyMessage) {
+    uproto_parser_runtime_t* runtime = uproto_parser_create();
+    uproto_message_t* message = uproto_message_create();
+
+    runtime->ready_message = message;
+
+    EXPECT_TRUE(uproto_parser_has_message_ready(runtime));
+    EXPECT_EQ(message, uproto_parser_get_ready_message(runtime));
+    EXPECT_TRUE(runtime->ready_message == NULL);
 }

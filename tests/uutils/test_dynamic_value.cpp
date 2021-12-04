@@ -105,7 +105,7 @@ TEST_P(DynamicValueTest, IntegrationTest) {
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
 }
 
-TEST_P(DynamicValueTest, splitToBytes) {
+TEST_P(DynamicValueTest, SplitToBytes) {
     dynamic_test_data data = GetParam();
 
     std::vector<uint8_t> result = dynamic_split_to_bytes(data.dynamic_value);

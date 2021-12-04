@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "uutils/checksum.h"
 #include "uutils/checksum.hpp"
+#include "uutils/dynamic_value.h"
 
 struct checksum_test_data {
     std::vector<uint8_t> data;
@@ -21,6 +22,29 @@ INSTANTIATE_TEST_SUITE_P(ChecksumDataTests, ChecksumTest, testing::Values(
     checksum_test_data { { 255 }, 255 },
     checksum_test_data { { 245, 255, 134, 151 }, 17 },
     checksum_test_data { { 127, 128 }, 255 }
+));
+
+struct dynamic_test_data {
+    uint64_t real_value;
+    uint64_t dynamic_value;
+    uint8_t dynamic_size;
+};
+
+class ChecksumDynamicTest
+    : public testing::TestWithParam<dynamic_test_data> {
+};
+
+INSTANTIATE_TEST_SUITE_P(ChecksumDynamicDataTest, ChecksumDynamicTest, testing::Values(
+    dynamic_test_data { 0x00, 0x00, 1 },
+    dynamic_test_data { 0x01, 0x01, 1 },
+    dynamic_test_data { 0x40, 0x40, 1 },
+    dynamic_test_data { 0x7F, 0x7F, 1 },
+    dynamic_test_data { 0x0080, 0x8000, 2 },
+    dynamic_test_data { 0x0100, 0x8080, 2 },
+    dynamic_test_data { 0x407F, 0xBFFF, 2 },
+    dynamic_test_data { 0x00004080, 0xC0000000, 4 },
+    dynamic_test_data { 0x0080C100, 0xC0808080, 4 },
+    dynamic_test_data { 0x2000407F, 0xDFFFFFFF, 4 }
 ));
 
 TEST_P(ChecksumTest, Simple_UseVectorIterators) {
@@ -79,4 +103,24 @@ TEST_F(ChecksumTest, Simple_CombineChecksum_VectorInterface) {
 
     uint8_t result = checksum_simple_combine(starting_checksum, vec_data);
     ASSERT_EQ(1 + 2 + 3 + 4 + 5 + 43, result);
+}
+
+TEST_P(ChecksumDynamicTest, SimpleDynamicValue) {
+    dynamic_test_data data = GetParam();
+
+    uint8_t expected_checksum = 0;
+    if (data.dynamic_size == 1) {
+        expected_checksum = (uint8_t)data.dynamic_value;
+    } else if (data.dynamic_size == 2) {
+        expected_checksum += (uint8_t)(data.dynamic_value >> 8);
+        expected_checksum += (uint8_t)(data.dynamic_value);
+    } else if (data.dynamic_size == 4) {
+        uint32_t serialized = dynamic_serialize(data.dynamic_value, nullptr);
+        expected_checksum += (uint8_t)(data.dynamic_value >> 24);
+        expected_checksum += (uint8_t)(data.dynamic_value >> 16);
+        expected_checksum += (uint8_t)(data.dynamic_value >> 8);
+        expected_checksum += (uint8_t)(data.dynamic_value);
+    }
+
+    ASSERT_EQ(expected_checksum, checksum_simple_dynamic_value(data.real_value));
 }
