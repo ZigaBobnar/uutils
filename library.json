@@ -1,0 +1,38 @@
+{
+    "name": "uutils",
+    "version": "0.0.1",
+    "description": "Collection of C and C++ utilities that can be used to accelerate the development of embedded projects by providing ready to use tested components.",
+    "keywords": "",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ZigaBobnar/uutils.git"
+    },
+    "authors": {
+        "name": "Ziga Bobnar"
+    },
+    "license": "MIT",
+    "frameworks": "*",
+    "platforms": "*",
+    "headers": [
+        "checksum.h",
+        "common.h",
+        "dynamic_value.h",
+        "fifo.h",
+        "uproto/core.h",
+        "uproto/message.h",
+        "uproto/parser.h",
+        "uproto/uproto.h"
+    ],
+    "export": {
+        "exclude": [
+            "dependencies/*",
+            "tests/*"
+        ]
+    },
+    "build": {
+        "srcFilter": [
+            "+<*.c>",
+            "+<*.h>"
+        ]
+    }
+}
