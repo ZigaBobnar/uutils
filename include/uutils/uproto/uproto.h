@@ -2,7 +2,9 @@
 #define UUTILS_UPROTO_UPROTO_H_
 
 #include "uutils/uproto/core.h"
+#include "uutils/uproto/version.h"
 #include "uutils/uproto/message.h"
 #include "uutils/uproto/parser.h"
+#include "uutils/uproto/runtime.h"
 
 #endif  // UUTILS_UPROTO_UPROTO_H_

@@ -25,7 +25,7 @@
  *
  * [1b] message_end = 0b11001100            -> uproto message end.
  *
- * Minimum message length (empty payload): 1b+1b+1b+1b+0b+1b+1b = 6b
+ * Minimum message length (empty payload, disabled checksum): 1b+1b+1b+1b+0b+0b+1b = 5b
  *
  */
 
@@ -85,6 +85,8 @@ bool uproto_message_has_checksum(uproto_message_t* message);
 bool uproto_message_skips_checksum(uproto_message_t* message);
 uint8_t uproto_message_calculate_checksum(uproto_message_t* message);
 bool uproto_message_is_checksum_valid(uproto_message_t* message, uint8_t checksum);
+
+uint8_t* uproto_message_serialize(uproto_message_t* message, size_t* size_ptr);
 
 __EXTERN_C_END
 

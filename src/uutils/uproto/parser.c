@@ -2,47 +2,47 @@
 #include "uutils/uproto/message.h"
 #include "uutils/dynamic_value.h"
 
-uproto_parser_runtime_t* uproto_parser_create() {
-    uproto_parser_runtime_t* runtime = malloc(sizeof(uproto_parser_runtime_t));
+uproto_parser_t* uproto_parser_create() {
+    uproto_parser_t* parser = malloc(sizeof(uproto_parser_t));
 
-    runtime->state = uproto_message_parser_state_message_start;
-    runtime->parsing_message = NULL;
-    runtime->ready_message = NULL;
+    parser->state = uproto_message_parser_state_message_start;
+    parser->parsing_message = NULL;
+    parser->ready_message = NULL;
 
-    return runtime;
+    return parser;
 }
 
-void uproto_parser_destroy(uproto_parser_runtime_t** runtime_ptr) {
-    if (runtime_ptr == NULL || *runtime_ptr == NULL) {
+void uproto_parser_destroy(uproto_parser_t** parser_ptr) {
+    if (parser_ptr == NULL || *parser_ptr == NULL) {
         return;
     }
 
-    if ((*runtime_ptr)->parsing_message != NULL) {
-        uproto_message_destroy(&(*runtime_ptr)->parsing_message);
+    if ((*parser_ptr)->parsing_message != NULL) {
+        uproto_message_destroy(&(*parser_ptr)->parsing_message);
     }
 
-    if ((*runtime_ptr)->ready_message != NULL) {
-        uproto_message_destroy(&(*runtime_ptr)->ready_message);
+    if ((*parser_ptr)->ready_message != NULL) {
+        uproto_message_destroy(&(*parser_ptr)->ready_message);
     }
 
-    free(*runtime_ptr);
-    *runtime_ptr = NULL;
+    free(*parser_ptr);
+    *parser_ptr = NULL;
 }
 
-uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t* runtime, const uint8_t value) {
-    switch (runtime->state) {
+uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser, const uint8_t value) {
+    switch (parser->state) {
     case uproto_message_parser_state_message_start:
         if (value == uproto_message_start) {
-            runtime->parsing_message = uproto_message_create();
-            runtime->parsing_message->parse_status = uproto_message_status_parsing;
+            parser->parsing_message = uproto_message_create();
+            parser->parsing_message->parse_status = uproto_message_status_parsing;
 
-            runtime->state = uproto_message_parser_state_message_properties;
+            parser->state = uproto_message_parser_state_message_properties;
         }
         break;
     case uproto_message_parser_state_message_properties:
-        runtime->parsing_message->message_properties = value;
+        parser->parsing_message->message_properties = value;
 
-        runtime->state = uproto_message_parser_state_resource_id;
+        parser->state = uproto_message_parser_state_resource_id;
         break;
     case uproto_message_parser_state_resource_id: {
         static uint8_t required_num = 0;
@@ -55,18 +55,18 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
         }
 
         if (required_num == 1) {
-            runtime->parsing_message->resource_id = (uint32_t)dynamic_parse(value, NULL);
+            parser->parsing_message->resource_id = (uint32_t)dynamic_parse(value, NULL);
 
-            runtime->state = uproto_message_parser_state_payload_length;
+            parser->state = uproto_message_parser_state_payload_length;
             required_num = 0;
         }
 
         cache[cached_num++] = value;
 
         if (cached_num == required_num) {
-            runtime->parsing_message->resource_id = (uint32_t)dynamic_parse_buffer(cache, NULL);
+            parser->parsing_message->resource_id = (uint32_t)dynamic_parse_buffer(cache, NULL);
 
-            runtime->state = uproto_message_parser_state_payload_length;
+            parser->state = uproto_message_parser_state_payload_length;
             required_num = 0;
         }
         break;
@@ -81,9 +81,9 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
             cached_num = 0;
 
             if (required_num == 1) {
-                runtime->parsing_message->payload_length = (uint32_t)dynamic_parse(value, NULL);
+                parser->parsing_message->payload_length = (uint32_t)dynamic_parse(value, NULL);
 
-                runtime->state = runtime->parsing_message->payload_length > 0 ? 
+                parser->state = parser->parsing_message->payload_length > 0 ? 
                     uproto_message_parser_state_payload :
                     uproto_message_parser_state_checksum;
 
@@ -94,9 +94,9 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
         cache[cached_num++] = value;
 
         if (cached_num == required_num) {
-            runtime->parsing_message->payload_length = (uint32_t)dynamic_parse_buffer(cache, NULL);
+            parser->parsing_message->payload_length = (uint32_t)dynamic_parse_buffer(cache, NULL);
 
-            runtime->state = uproto_message_parser_state_payload;
+            parser->state = uproto_message_parser_state_payload;
             required_num = 0;
         }
         break;
@@ -106,44 +106,44 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
         static size_t message_payload_length = 0;
 
         if (payload_position == 0) {
-             if (runtime->parsing_message->payload_length == 0) {
+             if (parser->parsing_message->payload_length == 0) {
                  // Invalid state.
              }
 
-             message_payload_length = runtime->parsing_message->payload_length;
-             runtime->parsing_message->payload = malloc(message_payload_length);
+             message_payload_length = parser->parsing_message->payload_length;
+             parser->parsing_message->payload = malloc(message_payload_length);
         }
 
-        runtime->parsing_message->payload[payload_position++] = value;
+        parser->parsing_message->payload[payload_position++] = value;
 
-        if (payload_position >= runtime->parsing_message->payload_length) {
-            runtime->state = uproto_message_parser_state_checksum;
+        if (payload_position >= parser->parsing_message->payload_length) {
+            parser->state = uproto_message_parser_state_checksum;
             payload_position = 0;
         }
 
         break;
     }
     case uproto_message_parser_state_checksum:
-        if (!uproto_message_has_checksum(runtime->parsing_message)) {
-            runtime->state = uproto_message_end;
+        if (!uproto_message_has_checksum(parser->parsing_message)) {
+            parser->state = uproto_message_end;
 
-            return uproto_parser_parse_single(runtime, value);
+            return uproto_parser_parse_single(parser, value);
         }
 
-        runtime->parsing_message->checksum = value;
-        runtime->state = uproto_message_parser_state_message_end;
+        parser->parsing_message->checksum = value;
+        parser->state = uproto_message_parser_state_message_end;
 
         break;
     case uproto_message_parser_state_message_end:
-        runtime->ready_message = runtime->parsing_message;
-        runtime->parsing_message = NULL;
+        parser->ready_message = parser->parsing_message;
+        parser->parsing_message = NULL;
 
-        runtime->state = uproto_message_parser_state_message_start;
+        parser->state = uproto_message_parser_state_message_start;
 
         if (value == uproto_message_end) {
-            runtime->ready_message->parse_status = uproto_message_status_ok;
+            parser->ready_message->parse_status = uproto_message_status_ok;
         } else {
-            runtime->ready_message->parse_status = uproto_message_status_end_invalid;
+            parser->ready_message->parse_status = uproto_message_status_end_invalid;
         }
 
         return uproto_message_parser_result_message_ready;
@@ -153,22 +153,21 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t*
     return uproto_message_parser_result_ok;
 }
 
-uproto_message_parser_result uproto_parser_parse_multi(uproto_parser_runtime_t* runtime, const uint8_t* buffer, const size_t length) {
+uproto_message_parser_result uproto_parser_parse_multi(uproto_parser_t* parser, const uint8_t* buffer, const size_t length) {
     return uproto_message_parser_result_unknown_error;
 }
 
-bool uproto_parser_has_message_ready(uproto_parser_runtime_t* runtime) {
-    return runtime->ready_message != NULL;
+bool uproto_parser_has_message_ready(uproto_parser_t* parser) {
+    return parser->ready_message != NULL;
 }
 
-uproto_message_t* uproto_parser_get_ready_message(uproto_parser_runtime_t* runtime) {
-    if (runtime->ready_message == NULL) {
+uproto_message_t* uproto_parser_get_ready_message(uproto_parser_t* parser) {
+    if (parser->ready_message == NULL) {
         return NULL;
     }
 
-    // TODO: TESTS!!
-    uproto_parser_runtime_t* message = runtime->ready_message;
-    runtime->ready_message = NULL;
+    uproto_message_t* message = parser->ready_message;
+    parser->ready_message = NULL;
 
     return message;
 }

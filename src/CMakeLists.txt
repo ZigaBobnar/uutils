@@ -1,7 +1,9 @@
 set(UUTILS_C_SOURCES
     uutils/uproto/message.c
     uutils/uproto/parser.c
+    uutils/uproto/runtime.c
     uutils/uproto/uproto.c
+    uutils/uproto/version.c
 
     uutils/common.c
     uutils/checksum.c

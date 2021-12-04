@@ -13,12 +13,13 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/googletest ${CMAKE_
 add_executable(uutils_tests
     main.cpp
 
-    uutils/uproto/test_uproto_message.cpp
-    uutils/uproto/test_uproto_parser.cpp
+#    uutils/uproto/test_uproto_message.cpp
+#    uutils/uproto/test_uproto_parser.cpp
+    uutils/uproto/test_uproto_runtime.cpp
 
-    uutils/test_checksum.cpp
-    uutils/test_dynamic_value.cpp
-    uutils/test_fifo.cpp
+#    uutils/test_checksum.cpp
+#    uutils/test_dynamic_value.cpp
+#    uutils/test_fifo.cpp
 )
 
 target_link_libraries(uutils_tests

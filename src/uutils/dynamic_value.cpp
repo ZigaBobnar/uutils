@@ -4,8 +4,9 @@ std::tuple<uint64_t, uint8_t> dynamic_parse(std::vector<uint8_t>& input) {
     uint8_t* output_ptr;
 
     uint64_t result = dynamic_parse_buffer(&input[0], &output_ptr);
+    uint8_t size = (uint8_t)(output_ptr - input.data() + 1);
 
-    return std::make_tuple(result, output_ptr - input.data() + 1);
+    return std::make_tuple(result, size);
 }
 
 std::vector<uint8_t> dynamic_serialize_to_vector(const uint64_t value) {

@@ -22,24 +22,24 @@ typedef enum {
     uproto_message_parser_result_unknown_error,
 } uproto_message_parser_result;
 
-struct uproto_parser_runtime_t {
+struct uproto_parser_t {
     struct uproto_message_t* ready_message;
     struct uproto_message_t* parsing_message;
 
     uproto_message_parser_state state;
 };
 
-uproto_parser_runtime_t* uproto_parser_create();
+uproto_parser_t* uproto_parser_create();
 
-void uproto_parser_destroy(uproto_parser_runtime_t** runtime_ptr);
+void uproto_parser_destroy(uproto_parser_t** parser_ptr);
 
-uproto_message_parser_result uproto_parser_parse_single(uproto_parser_runtime_t* runtime, const uint8_t value);
+uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser, const uint8_t value);
 
-uproto_message_parser_result uproto_parser_parse_multi(uproto_parser_runtime_t* runtime, const uint8_t* buffer, const size_t length);
+uproto_message_parser_result uproto_parser_parse_multi(uproto_parser_t* parser, const uint8_t* buffer, const size_t length);
 
-bool uproto_parser_has_message_ready(uproto_parser_runtime_t* runtime);
+bool uproto_parser_has_message_ready(uproto_parser_t* parser);
 
-uproto_message_t* uproto_parser_get_ready_message(uproto_parser_runtime_t* runtime);
+uproto_message_t* uproto_parser_get_ready_message(uproto_parser_t* parser);
 
 __EXTERN_C_END
 

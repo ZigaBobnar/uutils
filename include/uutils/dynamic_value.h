@@ -66,6 +66,8 @@ uint64_t dynamic_serialize(const uint64_t value, uint8_t* written_bytes);
  */
 uint8_t dynamic_serialize_get_required_bytes(const uint64_t value);
 
+uint8_t dynamic_serialize_into_buffer(uint64_t value, uint8_t* buffer);
+
 __EXTERN_C_END
 
 #endif  // UUTILS_DYNAMIC_VALUE_H_

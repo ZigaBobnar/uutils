@@ -82,4 +82,22 @@ uint8_t dynamic_serialize_get_required_bytes(const uint64_t value) {
         1;
 }
 
+uint8_t dynamic_serialize_into_buffer(uint64_t value, uint8_t* buffer) {
+    uint8_t written_bytes;
+    uint64_t serialized = dynamic_serialize(value, &written_bytes);
+    if (written_bytes == 4) {
+        buffer[0] = (uint8_t)(serialized >> 24);
+        buffer[1] = (uint8_t)(serialized >> 16);
+        buffer[2] = (uint8_t)(serialized >> 8);
+        buffer[3] = (uint8_t)(serialized);
+    } else if (written_bytes == 2) {
+        buffer[0] = (uint8_t)(serialized >> 8);
+        buffer[1] = (uint8_t)(serialized);
+    } else if (written_bytes == 1) {
+        buffer[0] = (uint8_t)(serialized);
+    }
+
+    return written_bytes;
+}
+
 __EXTERN_C_END

@@ -21,7 +21,9 @@
         "uproto/core.h",
         "uproto/message.h",
         "uproto/parser.h",
-        "uproto/uproto.h"
+        "uproto/runtime.h",
+        "uproto/uproto.h",
+        "uproto/version.h"
     ],
     "export": {
         "exclude": [

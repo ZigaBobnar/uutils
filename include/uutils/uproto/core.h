@@ -5,12 +5,10 @@
 
 __EXTERN_C_BEGIN
 
-const static uint16_t uproto_runtime_version_major = 0x00;
-const static uint16_t uproto_runtime_version_minor = 0x00;
-const static uint16_t uproto_runtime_version_patch = 0x01;
-
+typedef struct uproto_runtime_t uproto_runtime_t;
+typedef struct uproto_version_info_t uproto_version_info_t;
 typedef struct uproto_message_t uproto_message_t;
-typedef struct uproto_parser_runtime_t uproto_parser_runtime_t;
+typedef struct uproto_parser_t uproto_parser_t;
 
 __EXTERN_C_END
 
