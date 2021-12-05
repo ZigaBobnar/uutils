@@ -10,6 +10,10 @@ struct checksum_test_data {
 
 class ChecksumTest
     : public testing::TestWithParam<checksum_test_data> {
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
+
 protected:
     std::vector<uint8_t> vec_data;
 };

@@ -125,7 +125,7 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser,
     }
     case uproto_message_parser_state_checksum:
         if (!uproto_message_has_checksum(parser->parsing_message)) {
-            parser->state = uproto_message_end;
+            parser->state = uproto_message_parser_state_message_end;
 
             return uproto_parser_parse_single(parser, value);
         }

@@ -7,6 +7,9 @@ struct fifo_test_data {
 
 class FifoTest
     : public testing::TestWithParam<fifo_test_data> {
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
 };
 
 /*INSTANTIATE_TEST_SUITE_P(FifoDataTests, FifoTest, testing::Values(
@@ -36,6 +39,8 @@ TEST_F(FifoTest, IntegrationTest) {
     fifo_write_single(fifo, 15);
     EXPECT_TRUE(fifo_read_single(fifo, &read_single_result));
     EXPECT_EQ(15, read_single_result);
+
+    fifo_destroy(&fifo);
 }
 
 TEST_F(FifoTest, IntegrationTest_ClassInterface) {

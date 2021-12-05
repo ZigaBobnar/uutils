@@ -3,6 +3,9 @@
 #include "uutils/dynamic_value.hpp"
 
 class UprotoParserTests : public testing::Test {
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
 };
 
 struct dynamic_test_data {
@@ -13,6 +16,10 @@ struct dynamic_test_data {
 
 class UprotoParserDynamicValueTests : public UprotoParserTests,
     public testing::WithParamInterface<dynamic_test_data> {
+
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
 };
 
 INSTANTIATE_TEST_SUITE_P(DynamicParserTests, UprotoParserDynamicValueTests, testing::Values(
@@ -34,6 +41,10 @@ struct payload_test_data {
 
 class UprotoParserPayloadTests : public UprotoParserTests,
     public testing::WithParamInterface<payload_test_data> {
+
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
 };
 
 INSTANTIATE_TEST_SUITE_P(PayloadParserTests, UprotoParserPayloadTests, testing::Values(
@@ -354,6 +365,10 @@ TEST_F(UprotoParserTests, GetReadyMessage) {
     parser->ready_message = message;
 
     EXPECT_TRUE(uproto_parser_has_message_ready(parser));
-    EXPECT_EQ(message, uproto_parser_get_ready_message(parser));
+    uproto_message_t* ready_message = uproto_parser_get_ready_message(parser);
+    EXPECT_EQ(message, ready_message);
     EXPECT_TRUE(parser->ready_message == NULL);
+
+    uproto_message_destroy(&ready_message);
+    uproto_parser_destroy(&parser);
 }

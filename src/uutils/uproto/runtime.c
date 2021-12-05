@@ -204,6 +204,7 @@ bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runt
         printf("0x%X ", serialized_message[i]);
     }
     printf("\n\n");
+    free(serialized_message);
 
     return false;
 }
@@ -233,6 +234,7 @@ bool uproto_runtime_global_console_respond_adapter_action(uproto_runtime_t* runt
     for (size_t i = 0; i < message_raw_size; ++i) {
         printf("0x%X ", serialized_message[i]);
     }
+    free(serialized_message);
     printf("\n\n");
 
     return false;

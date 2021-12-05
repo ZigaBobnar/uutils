@@ -3,6 +3,9 @@
 #include "uutils/checksum.h"
 
 class UprotoMessageTests : public testing::Test {
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
 };
 
 TEST_F(UprotoMessageTests, Create) {
@@ -15,7 +18,7 @@ TEST_F(UprotoMessageTests, Create) {
     ASSERT_EQ(0, message->checksum);
     ASSERT_EQ(uproto_message_status_unknown, message->parse_status);
 
-    delete message;
+    free(message);
 }
 
 TEST_F(UprotoMessageTests, Destroy) {

@@ -26,6 +26,9 @@ void test_place_dynamic(uint64_t value, uint8_t size, uint8_t* buffer) {
 
 class DynamicValueTest
     : public testing::TestWithParam<dynamic_test_data> {
+    virtual void TearDown() {
+        memory_debug_print_report();
+    }
 };
 
 INSTANTIATE_TEST_SUITE_P(DynamicValueDataTests, DynamicValueTest, testing::Values(

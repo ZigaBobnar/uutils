@@ -8,6 +8,10 @@ cmake_policy(SET CMP0077 NEW) # This allows new policy to override option variab
 
 option(UUTILS_BUILD_TESTS "Build uutils_tests when enabled" ON)
 
+if(UUTILS_BUILD_TESTS)
+    add_definitions(-DDEBUG)
+endif()
+
 add_subdirectory(src)
 
 if(UUTILS_BUILD_TESTS)

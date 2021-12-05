@@ -65,11 +65,9 @@ uint64_t dynamic_serialize(const uint64_t value, uint8_t* written_bytes) {
     if (dynamic_size == 1) {
         return value;
     } else if (dynamic_size == 2) {
-        return preamble_2b_mode |
-            value - offset_2b_mode;
+        return (preamble_2b_mode | value) - offset_2b_mode;
     } else if (dynamic_size == 4) {
-        return preamble_4b_mode |
-            value - offset_4b_mode;
+        return (preamble_4b_mode | value) - offset_4b_mode;
     }
 
     return 0;

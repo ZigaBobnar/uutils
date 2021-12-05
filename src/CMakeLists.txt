@@ -10,6 +10,9 @@ set(UUTILS_C_SOURCES
     uutils/dynamic_value.c
     uutils/fifo.c
 )
+if(UUTILS_BUILD_TESTS)
+    set(UUTILS_C_SOURCES ${UUTILS_C_SOURCES} uutils/memory_debug.cpp)
+endif()
 
 set(UUTILS_CPP_SOURCES
     uutils/checksum.cpp

@@ -35,4 +35,8 @@ void debug_crash_shutdown(void);
 #define __EXTERN_C_END
 #endif
 
+#ifdef DEBUG
+#include "uutils/memory_debug.h"
+#endif
+
 #endif  // UUTILS_COMMON_H_
