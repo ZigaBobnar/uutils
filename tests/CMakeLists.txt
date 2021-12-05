@@ -20,7 +20,7 @@ add_executable(uutils_tests
 
     uutils/test_checksum.cpp
     uutils/test_dynamic_value.cpp
-    utils/test_fifo.cpp
+    uutils/test_fifo.cpp
 )
 
 target_link_libraries(uutils_tests
