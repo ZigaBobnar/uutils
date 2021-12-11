@@ -24,7 +24,18 @@ std::vector<uint8_t> dynamic_serialize_to_vector(const uint64_t value) {
 }
 
 std::vector<uint8_t> dynamic_split_to_bytes(const uint64_t value) {
-    if (value >= 0x10000) {
+    if (value >= 0x100000000) {
+        return {
+            (uint8_t)(value >> 56),
+            (uint8_t)(value >> 48),
+            (uint8_t)(value >> 40),
+            (uint8_t)(value >> 32),
+            (uint8_t)(value >> 24),
+            (uint8_t)(value >> 16),
+            (uint8_t)(value >> 8),
+            (uint8_t)(value),
+        };
+    } else if (value >= 0x10000) {
         return {
             (uint8_t)(value >> 24),
             (uint8_t)(value >> 16),

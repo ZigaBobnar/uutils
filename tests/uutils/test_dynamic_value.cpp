@@ -9,7 +9,16 @@ struct dynamic_test_data {
 };
 
 void test_place_dynamic(uint64_t value, uint8_t size, uint8_t* buffer) {
-    if (size == 4) {
+    if (size == 8) {
+        buffer[0] = (uint8_t)(value >> 56);
+        buffer[1] = (uint8_t)(value >> 48);
+        buffer[2] = (uint8_t)(value >> 40);
+        buffer[3] = (uint8_t)(value >> 32);
+        buffer[4] = (uint8_t)(value >> 24);
+        buffer[5] = (uint8_t)(value >> 16);
+        buffer[6] = (uint8_t)(value >> 8);
+        buffer[7] = (uint8_t)(value);
+    } else if (size == 4) {
         buffer[0] = (uint8_t)(value >> 24);
         buffer[1] = (uint8_t)(value >> 16);
         buffer[2] = (uint8_t)(value >> 8);
@@ -41,7 +50,9 @@ INSTANTIATE_TEST_SUITE_P(DynamicValueDataTests, DynamicValueTest, testing::Value
     dynamic_test_data { 0x407F, 0xBFFF, 2 },
     dynamic_test_data { 0x00004080, 0xC0000000, 4 },
     dynamic_test_data { 0x0080C100, 0xC0808080, 4 },
-    dynamic_test_data { 0x2000407F, 0xDFFFFFFF, 4 }
+    dynamic_test_data { 0x2000407F, 0xDFFFFFFF, 4 },
+    dynamic_test_data { 0x0000000020004080, 0xE000000000000000, 8 },
+    dynamic_test_data { 0x100000002000407F, 0xEFFFFFFFFFFFFFFF, 8 }
 ));
 
 TEST_P(DynamicValueTest, Parse_DirectInput) {

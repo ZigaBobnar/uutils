@@ -12,18 +12,22 @@
  * Once we expand to 2b value, the MSB must be 1, and for further expansion the bit next to MSB will be used to toggle the 4b mode.
  * To maximize the available values, the duplicated values are removed (when we overflow from one mode to next, it resumes from the last number) at cost of readability (we need a converter to convert back to actual value).
  * After the value is decoded, it will have been stripped of extra bits, so only actual data is represented.
- *  *Due to not being needed ATM, 8b mode has not been implemented!*
  *
  * Example:
  * 0b00000001 (0x01, 1)                     => 0x01, 1 (1b mode)
  * 0b01000000 (0x40, 64)                    => 0x40, 64 (1b mode)
  * 0b01111111 (0x7F, 127)                   => 0x7F, 127 (1b mode)
+ * 
  * 0b10000000 0b00000000 (0x8000, 32768)    => 0x0080, 128 (2b mode)
  * 0b10000000 0b10000000 (0x8080, 32896)    => 0x0100, 256 (2b mode)
  * 0b10111111 0b11111111 (0xBFFF, 49151)   => 0x407F, 16511 (2b mode)
+ * 
  * 0b11000000 0b00000000 0b00000000 0b00000000 (0xC0000000, 2147483648) => 0x00004080, 16512 (4b mode)
  * 0b11000000 0b10000000 0b10000000 0b10000000 (0xC0808080, 3229646976) => 0x0080C100, 8438016 (4b mode)
  * 0b11011111 0b11111111 0b11111111 0b11111111 (0xDFFFFFFF, 3758096383) => 0x2000407F, 536887423 (4b mode)
+ * 
+ * 0b11100000 0b00000000 0b00000000 0b00000000 0b00000000 0b00000000 0b00000000 0b00000000 (0xE0000000 0x00000000) => 0x00000000 0x20004080, 536887424 (8b mode)
+ * 0b11101111 0b11111111 0b11111111 0b11111111 0b11111111 0b11111111 0b11111111 0b11111111 (0xEFFFFFFF 0xFFFFFFFF) => 0x10000000 0x2000407F, 1152921505143734399 (8b mode)
  */
 
 __EXTERN_C_BEGIN
