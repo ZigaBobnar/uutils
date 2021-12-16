@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>uutils</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    {{!-- <link rel="stylesheet" type="text/css" href="./style.css" /> --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h2 class="header">uutils</h2>
+    </div>
+
+    {{!-- Use {{> partialName }} to include partials --}}
+    {{!-- Output injected variables using {{ varName }} --}}
+    {{!-- If: {{#if condition }} {{/if}} --}}
+    {{!-- If not: {{#unless condition }} {{/unless}} --}}
+    {{!-- Foreach: {{#each list }} {{/each}}, access current item with {{this}}, index with {{@index}}, key with {{@key}} --}}
+    {{!-- Change context to object: {{#with object }} {{/with}} --}}
+
+    {{{ body }}}
+  </body>
+</html>

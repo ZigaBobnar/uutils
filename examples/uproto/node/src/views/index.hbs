@@ -1,0 +1,15 @@
+<div class="container">
+  <h4>Connected devices:</h4>
+    {{#unless devices.length}}
+      No devices.
+    {{/unless}}
+
+    {{#if devices.length}}
+      <ul>
+        {{#each devices}}
+          <li>{{{name}}}</li>
+        {{/each}}
+      </ul>
+    {{/if}}
+
+</div>
