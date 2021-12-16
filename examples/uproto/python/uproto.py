@@ -1,9 +1,12 @@
-from dynamic_value import dynamic_value, dynamic_get_length
+from uutils import dynamic_value, dynamic_get_length
 import serial
 import time
 
 uproto_message_start = 0b00110011
 uproto_message_end = 0b11001100
+
+def bin8(num):
+    return '0b' + format(num, '08b')
 
 class uproto_message:
     def __init__(self):
@@ -30,6 +33,22 @@ class uproto_message:
 
         return result
 
+    def calculate_checksum(self):
+        return (uproto_message_start +
+            self.message_properties +
+            sum(self.resource_id.serialize()) +
+            sum(self.payload_length.serialize()) +
+            sum(self.payload)
+        ) & 0xFF
+
+    def __str__(self):
+        return ('[uproto_message]\n  message_properties=' + bin8(self.message_properties) +
+            '\n  resource_id=' + hex(self.resource_id.real_value) +
+            '\n  payload_length=' + str(self.payload_length.real_value) +
+            '\n  payload=' + ','.join([(hex(p)) for p in self.payload]) + 
+            '\n  checksum=' + hex(self.checksum) +
+            '\n  checksum(calculated)=' + hex(self.calculate_checksum()))
+
 class dynamic_parsing_state:
     def __init__(self, required: int):
         self.required = required
@@ -48,6 +67,7 @@ class uproto_runtime:
         self.serialPort = serial.Serial()
         self.serialPort.port = "COM3"
         self.serialPort.baudrate = 115200
+        self.serialPort.baudrate = 9600
         self.serialPort.timeout = 2
         self.serialPort.setDTR(False)
         self.serialPort.open()
@@ -69,7 +89,29 @@ class uproto_runtime:
         #     time.sleep(0.01)
 
 
-        time.sleep(0.1)
+        #time.sleep(0.1)
+
+    def send_request_await_response(self, request: uproto_message):
+        if (not self.serialPort.is_open):
+            print('Serial port is not open\n')
+            return
+
+        self.ready_message = None
+
+        data = request.serialize()
+        print('Sending packet', data.hex('-'))
+        self.serialPort.write(data)
+
+        #time.sleep(0.1)
+
+        response = None
+        while response == None:
+            self.execute()
+            if (self.ready_message):
+                response = self.ready_message
+                self.ready_message = None
+
+        return response
 
     def execute(self):
         while self.serialPort.in_waiting > 0:
@@ -94,11 +136,11 @@ class uproto_runtime:
             if self.resource_id_state == None:
                 self.resource_id_state = dynamic_parsing_state(dynamic_get_length(data))
 
-            if self.resource_id_state.required == 1:
-                self.parsing_message.resource_id.parse_dynamic([data])
-                self.resource_id_state = None
-                self.parser_state = 3
-                return
+                if self.resource_id_state.required == 1:
+                    self.parsing_message.resource_id.parse_dynamic([data])
+                    self.resource_id_state = None
+                    self.parser_state = 3
+                    return
 
             self.resource_id_state.cache[self.resource_id_state.cached] = data
             self.resource_id_state.cached += 1
@@ -129,7 +171,7 @@ class uproto_runtime:
 
         elif (self.parser_state == 4):
             # Payload
-            if self.parsing_message.payload_length == 0:
+            if self.parsing_message.payload_length.real_value == 0:
                 self.parser_state = 5
                 self.parse_data(data)
                 return
