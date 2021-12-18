@@ -8,37 +8,104 @@
  *
  * Those types are used when there is a possibility to start with smaller sized data type, but it might require to grow in length.
  * The notation for data size is as such: [1b,2b,4b,8b], meaning data can grow from simple 8-bit (1 byte) value all the way to 64-bits (8 bytes).
- * In reality the value notation is a bit misleading as in 8-bit value the MSB (most significant bit) is used to switch to next type. This means in 1b mode, there are 7 bits available for data.
- * Once we expand to 2b value, the MSB must be 1, and for further expansion the bit next to MSB will be used to toggle the 4b mode.
+ * In reality the value notation is a bit misleading as in 8-bit value the 2 MSB (most significant bits) are used to for signedness and to switch to next size type. This means in 1b mode, there are 6 bits available for data.
+ * Once we expand to 2b value, the second MSB must be 1, and for further expansion the bit next to that MSB will be used to toggle the 4b mode.
  * To maximize the available values, the duplicated values are removed (when we overflow from one mode to next, it resumes from the last number) at cost of readability (we need a converter to convert back to actual value).
  * After the value is decoded, it will have been stripped of extra bits, so only actual data is represented.
+ * Negative values follow two's complement - active bits are 0 and inactive 1
  *
  * Example:
- * 0b00000001 (0x01, 1)                     => 0x01, 1 (1b mode)
- * 0b01000000 (0x40, 64)                    => 0x40, 64 (1b mode)
- * 0b01111111 (0x7F, 127)                   => 0x7F, 127 (1b mode)
  * 
- * 0b10000000 0b00000000 (0x8000, 32768)    => 0x0080, 128 (2b mode)
- * 0b10000000 0b10000000 (0x8080, 32896)    => 0x0100, 256 (2b mode)
- * 0b10111111 0b11111111 (0xBFFF, 49151)   => 0x407F, 16511 (2b mode)
+ * - 1b mode:
+ * 0bsnxxxxxx
+ *      s => sign
+ *      n => 1b2b switch
+ *
+ * 0d00 = 0b00000000 =>
+ *      0x00 = 0b00000000 = 0
+ * 0d15 =>
+ *      0x15
+ * 0d3F = 0b00111111 =>
+ *      0x3F = 0x00111111 = 63 = 1b_max
+ *
+ * 0dFF = 0b11111111 =>
+ *      0xFF = 0b11111111 = -1
+ * 0dC0 = 0b11000000 =>
+ *      0xC0 = 0b11000000 = -64 = 1b_min
+ *
  * 
- * 0b11000000 0b00000000 0b00000000 0b00000000 (0xC0000000, 2147483648) => 0x00004080, 16512 (4b mode)
- * 0b11000000 0b10000000 0b10000000 0b10000000 (0xC0808080, 3229646976) => 0x0080C100, 8438016 (4b mode)
- * 0b11011111 0b11111111 0b11111111 0b11111111 (0xDFFFFFFF, 3758096383) => 0x2000407F, 536887423 (4b mode)
+ * - 2b mode:
+ * 0bsanxxxxx 0bxxxxxxxx
+ *      s => sign
+ *      a => always active
+ *      n => 2b4b switch
+ *
+ * 0d4000 = 0b01000000 0b00… =>
+ *      0x0040 = 64 = 2b_pos_offset
+ * 0d5555 =>
+ *      0x1595
+ * 0d5FFF = 0b01011111 0b11… =>
+ *      0x203F = 8255 = 2b_max
+ *
+ * 0dBFFF = 0b10111111 0b11… =>
+ *      0xFFBF = -65 = 2b_neg_offset
+ * 0dAAAA =>
+ *      0xEA6A
+ * 0dA000 = 0b10100000 0b00… =>
+ *      0xDFC0 = -8256 = 2b_min
+ *
  * 
- * 0b11100000 0b00000000 0b00000000 0b00000000 0b00000000 0b00000000 0b00000000 0b00000000 (0xE0000000 0x00000000) => 0x00000000 0x20004080, 536887424 (8b mode)
- * 0b11101111 0b11111111 0b11111111 0b11111111 0b11111111 0b11111111 0b11111111 0b11111111 (0xEFFFFFFF 0xFFFFFFFF) => 0x10000000 0x2000407F, 1152921505143734399 (8b mode)
+ * - 4b mode:
+ * 0bsaanxxxx 0bxxxxxxxx 0bxxxxxxxx 0bxxxxxxxx
+ *      s => sign
+ *      a => always active
+ *      n => 4b8b switch
+ *
+ * 0d60000000 = 0b01100000 0b00… =>
+ *      0x00002040 = 8256 = 4b_pos_offset
+ * 0d6AAAAAAA =>
+ *      0x0AAACAEA
+ * 0d6FFFFFFF = 0b01101111 0b11… =>
+ *      0x1000203F = 268443711 = 4b_max
+ *
+ * 0d9FFFFFFF = 0b10011111 0b11… =>
+ *      0xFFFFDFBF = -8257 = 4b_neg_offset
+ * 0d95555555 =>
+ *      0xF5553515
+ * 0d90000000 = 0b10010000 0b00… =>
+ *      0xEFFFDFC0 = -268443712 = 4_bmin
+ * 
+ * 
+ * - 8b mode:
+ * 0bsaaanxxx 0bxxxxxxxx 0bxxxxxxxx 0bxxxxxxxx 0bxxxxxxxx 0bxxxxxxxx 0bxxxxxxxx 0bxxxxxxxx
+ *      s => sign
+ *      a => always active
+ *      n => 8b16b switch
+ *
+ * 0d7000000000000000 = 0b01110000 0b00… =>
+ *      0x0000000010002040 = 268443712 = 8bpos offset
+ * 0d7555555555555555 =>
+ *      0x0555555565557595
+ * 0d77FFFFFFFFFFFFFF = 0b01101111 0b11… =>
+ *      0x080000001000203F = 576460752571867199 = 8bmax
+ * 
+ * 0d8FFFFFFFFFFFFFFF = 0b10001111 0b11… =>
+ *      0xFFFFFFFFEFFFDFBF = -268443713 = 8bneg offset
+ * 0d8AAAAAAAAAAAAAAA =>
+ *      0xFAAAAAAA9AAA8A6A
+ * 0d8800000000000000 = 0b10001000 0b00… =>
+ *      0xF7FFFFFFEFFFDFC0 = -576460752571867201 = 8bmin
  */
 
 __EXTERN_C_BEGIN
 
 /**
- * Parses the dynamic value.
+ * Parses the dynamic value into real value.
  * @param input Input dynamic value.
  * @param out_ptr The pointer to where the dynamic size will be written.
  * @returns Parsed value.
  */
-uint64_t dynamic_parse(const uint64_t input, uint8_t* dynamic_size_out);
+int64_t dynamic_to_real(const uint64_t dynamic_input, uint8_t* dynamic_size_out);
 
 /**
  * Parses the dynamic value from buffer.
@@ -46,14 +113,21 @@ uint64_t dynamic_parse(const uint64_t input, uint8_t* dynamic_size_out);
  * @param out_ptr The pointer to where the end address of dynamic value will be written.
  * @returns Parsed value.
  */
-uint64_t dynamic_parse_buffer(uint8_t* input, uint8_t** out_ptr);
+int64_t dynamic_buffer_to_real(uint8_t* input, uint8_t** out_ptr);
 
 /**
  * Calculates the required bytes to parse the value.
  * @param first_byte_input First byte of the input (encoded) value.
  * @returns The required bytes.
  */
-uint8_t dynamic_parse_get_required_bytes(const uint8_t first_byte_input);
+uint8_t dynamic_to_real_get_required_bytes(const uint8_t first_byte_input);
+
+/**
+ * Finds the preamble byte value in the dynamic value.
+ * @param dynamic_value The combined dynamic value.
+ * @returns The preamble.
+ */
+uint8_t dynamic_find_preamble_byte(const uint64_t dynamic_value);
 
 /**
  * Converts the value into dynamic value. The result is returned as single value that can be bit-shifted to obtain each byte.
@@ -61,16 +135,24 @@ uint8_t dynamic_parse_get_required_bytes(const uint8_t first_byte_input);
  * @param  written_bytes The pointer to where the number of required bytes will be written.
  * @returns Combined converted value.
  */
-uint64_t dynamic_serialize(const uint64_t value, uint8_t* written_bytes);
+uint64_t real_to_dynamic(const int64_t value, uint8_t* written_bytes);
 
 /**
  * Calculates the required bytes to serialize the value into dynamic value.
  * @param value The input value.
  * @returns The required bytes count.
  */
-uint8_t dynamic_serialize_get_required_bytes(const uint64_t value);
+uint8_t real_to_dynamic_get_required_bytes(const int64_t value);
 
-uint8_t dynamic_serialize_into_buffer(uint64_t value, uint8_t* buffer);
+uint8_t real_to_dynamic_buffer(int64_t value, uint8_t* buffer);
+
+typedef struct _dynamic_state {
+    uint8_t required_num;
+    uint8_t cached_num;
+    uint8_t cache[8];
+} dynamic_state_t;
+
+bool dynamic_to_real_stateful(dynamic_state_t* state, uint8_t value, int64_t* return_ptr);
 
 __EXTERN_C_END
 

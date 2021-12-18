@@ -8,9 +8,12 @@
 
 __EXTERN_C_BEGIN
 
-const static uint8_t uproto_resource_id_protocol_version = 0x01;
-const static uint8_t uproto_resource_id_device_identifier_string = 0x02;
-const static uint8_t uproto_resource_id_application_identifier_string = 0x03;
+const static uint8_t uproto_resource_id_do_nothing = 0x01;
+const static uint8_t uproto_resource_id_echo_message = 0x02;
+const static uint8_t uproto_resource_id_system_initialize = 0x03;
+const static uint8_t uproto_resource_id_system_status = 0x04;
+const static uint8_t uproto_resource_id_protocol_version = 0x05;
+const static uint8_t uproto_resource_id_application_version = 0x06;
 
 typedef bool (*uproto_message_adapter_t)(uproto_runtime_t*, uproto_message_t*);
 

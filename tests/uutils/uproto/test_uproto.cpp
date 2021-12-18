@@ -1,11 +1,8 @@
 #include <gtest/gtest.h>
+#include "../test_core.hpp"
 #include "uutils/uproto/uproto.h"
 
-class UprotoTests : public testing::Test {
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
+class UprotoTests : public CoreTest {};
 
 TEST_F(UprotoTests, RealWorldUsage) {
     uproto_runtime_t* runtime = uproto_runtime_create();
@@ -19,9 +16,9 @@ TEST_F(UprotoTests, RealWorldUsage) {
             uint8_t green = message->payload[1];
             uint8_t blue = message->payload[2];
 
-            /*analogWrite(RED_PIN, red);
-            analogWrite(GREEN_PIN, green);
-            analogWrite(BLUE_PIN, blue);*/
+            // analogWrite(RED_PIN, red);
+            // analogWrite(GREEN_PIN, green);
+            // analogWrite(BLUE_PIN, blue);
 
             uproto_message_t* response = uproto_message_create();
             response->message_properties = message->message_properties;
@@ -36,7 +33,6 @@ TEST_F(UprotoTests, RealWorldUsage) {
 
             return true;
         }
-
 
         return false;
     });
@@ -63,7 +59,7 @@ TEST_F(UprotoTests, RealWorldUsage) {
         0x96,
         0xcc,
     };
-    for (size_t n = 0; n < 200; ++n) {
+    for (size_t n = 0; n < 20; ++n) {
         for (size_t i = 0; i < 8; ++i) {
             uproto_runtime_feed_data(runtime, data_buffer[i]);
         }

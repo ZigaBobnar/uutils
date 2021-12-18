@@ -1,16 +1,9 @@
 #include <gtest/gtest.h>
+#include "test_core.hpp"
 #include "uutils/fifo.h"
 #include "uutils/fifo.hpp"
 
-struct fifo_test_data {
-};
-
-class FifoTest
-    : public testing::TestWithParam<fifo_test_data> {
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
+class FifoTest : public CoreTest {};
 
 /*INSTANTIATE_TEST_SUITE_P(FifoDataTests, FifoTest, testing::Values(
     fifo_test_data {}

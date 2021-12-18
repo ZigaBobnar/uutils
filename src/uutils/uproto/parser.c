@@ -8,6 +8,9 @@ uproto_parser_t* uproto_parser_create() {
     parser->state = uproto_message_parser_state_message_start;
     parser->parsing_message = NULL;
     parser->ready_message = NULL;
+    parser->message_properties_state.required_num = 0;
+    parser->resource_id_state.required_num = 0;
+    parser->payload_length_state.required_num = 0;
 
     return parser;
 }
@@ -39,66 +42,27 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser,
             parser->state = uproto_message_parser_state_message_properties;
         }
         break;
-    case uproto_message_parser_state_message_properties:
-        parser->parsing_message->message_properties = value;
+    case uproto_message_parser_state_message_properties: {
+        if (dynamic_to_real_stateful(&parser->message_properties_state, value, &parser->parsing_message->message_properties)) {
+            parser->state = uproto_message_parser_state_resource_id;
+        }
 
-        parser->state = uproto_message_parser_state_resource_id;
         break;
+    }
     case uproto_message_parser_state_resource_id: {
-        static uint8_t required_num = 0;
-        static uint8_t cached_num;
-        static uint8_t cache[8];
-
-        if (required_num == 0) {
-            required_num = dynamic_parse_get_required_bytes(value);
-            cached_num = 0;
-        }
-
-        if (required_num == 1) {
-            parser->parsing_message->resource_id = (uint32_t)dynamic_parse(value, NULL);
-
+        if (dynamic_to_real_stateful(&parser->resource_id_state, value, &parser->parsing_message->resource_id)) {
             parser->state = uproto_message_parser_state_payload_length;
-            required_num = 0;
         }
 
-        cache[cached_num++] = value;
-
-        if (cached_num == required_num) {
-            parser->parsing_message->resource_id = (uint32_t)dynamic_parse_buffer(cache, NULL);
-
-            parser->state = uproto_message_parser_state_payload_length;
-            required_num = 0;
-        }
         break;
     }
     case uproto_message_parser_state_payload_length: {
-        static uint8_t required_num = 0;
-        static uint8_t cached_num;
-        static uint8_t cache[8];
-
-        if (required_num == 0) {
-            required_num = dynamic_parse_get_required_bytes(value);
-            cached_num = 0;
-
-            if (required_num == 1) {
-                parser->parsing_message->payload_length = (uint32_t)dynamic_parse(value, NULL);
-
-                parser->state = parser->parsing_message->payload_length > 0 ? 
-                    uproto_message_parser_state_payload :
-                    uproto_message_parser_state_checksum;
-
-                required_num = 0;
-            }
+        if (dynamic_to_real_stateful(&parser->payload_length_state, value, &parser->parsing_message->payload_length)) {
+            parser->state = parser->parsing_message->payload_length > 0 ? 
+                uproto_message_parser_state_payload :
+                uproto_message_parser_state_checksum;
         }
 
-        cache[cached_num++] = value;
-
-        if (cached_num == required_num) {
-            parser->parsing_message->payload_length = (uint32_t)dynamic_parse_buffer(cache, NULL);
-
-            parser->state = uproto_message_parser_state_payload;
-            required_num = 0;
-        }
         break;
     }
     case uproto_message_parser_state_payload: {

@@ -9,24 +9,36 @@
  * [1b] message_start = 0b00110011          -> uproto message start and type designator
  *                                              If the message start is not recognized, it will be discarded.
  *
- * [1b] message_params = 0b000000cr         -> The message parameters.
+ * [dynamic] message_params = 0b000000cr    -> The message parameters.
  *                                              r specifies whether the message is request (r==0) or response (r==1)
  *                                              c specifies whether the message shall contain the checksum
  *
- * [1b...4b] resource_id                    -> The resource ID, first 128 (0-127) resource IDs are reserved for protocol use, anything above that can be used by application code.
+ * [dynamic] resource_id                    -> The resource ID
+ *                                              Range 0x00-0x1F (0-31) is reserved for system use
+ *                                              Range 0x8000-0xFFFF (32768-65535) is also reserved for system use
+ *                                              All other resource IDs are available to application usage.
  *
- * [1b...4b] payload_length                 -> Total payload length in bytes.
+ * [dynamic] payload_length                 -> Total payload length in bytes.
  *
  * [payload_length] payload                 -> The payload. Payload can have its own underlying structure that is processed in handler.
  *
- * [1b] checksum                            -> Checksum of complete message - if not valid the message is marked as invalid and to be discarded.
+ * [1b?] checksum                           -> Checksum of complete message - if not valid the message is marked as invalid and to be discarded.
  *                                              Calculated as simple sum of complete message and taken the lower 8 bits. Elements present in checksum:
  *                                                  message_start + message_params + resource_id + payload_length + payload + checksum
+ *                                              If checksum parameter in message_params is not set the checksum is not included in the message.
  *
  * [1b] message_end = 0b11001100            -> uproto message end.
  *
  * Minimum message length (empty payload, disabled checksum): 1b+1b+1b+1b+0b+0b+1b = 5b
  *
+ * System resource ids:
+ * - 0x00 => Do nothing (wait for the message end)
+ * - 0x01 => Echo message (decode the message and respond with re-encoded message back, useful for testing)
+ * - 0x02 => System initialize (initializes the protocol and device core functions)
+ * - 0x03 => System status (health report as well as important messages)
+ * - 0x04 => Protocol version (used to determine protocol compatibility)
+ * - 0x05 => Application version (can be used by applications to see if its definitions are compatible with the device)
+ * 
  */
 
 __EXTERN_C_BEGIN
@@ -35,7 +47,7 @@ const static uint8_t uproto_message_start = 0b00110011;
 const static uint8_t uproto_message_end = 0b11001100;
 
 const static uint8_t uproto_message_property_request_response_mask = 0b00000001;
-const static uint8_t uproto_message_property_skip_checksum_mask = 0b00000010;
+const static uint8_t uproto_message_property_has_checksum_mask = 0b00000010;
 
 typedef enum {
     uproto_message_status_unknown = 0,
@@ -45,9 +57,9 @@ typedef enum {
 } uproto_parse_status;
 
 struct uproto_message_t {
-    uint8_t message_properties;
-    uint32_t resource_id;
-    uint32_t payload_length;
+    int64_t message_properties;
+    int64_t resource_id;
+    int64_t payload_length;
     uint8_t* payload;
     uint8_t checksum;
 
@@ -66,6 +78,8 @@ uproto_message_t* uproto_message_create();
  * @param message_ptr Pointer reference to the instance.
  */
 void uproto_message_destroy(uproto_message_t** message_ptr);
+
+uproto_message_t* uproto_message_create_response_for_request(uproto_message_t* request);
 
 /**
  * Checks whether the uproto message instance is valid.

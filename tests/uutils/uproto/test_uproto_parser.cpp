@@ -1,55 +1,15 @@
 #include <gtest/gtest.h>
+#include "../test_core.hpp"
 #include "uutils/uproto/uproto.h"
 #include "uutils/dynamic_value.hpp"
 
-class UprotoParserTests : public testing::Test {
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
+class UprotoParserTests : public CoreTest {};
 
-struct dynamic_test_data {
-    uint64_t real_value;
-    uint64_t dynamic_value;
-    uint8_t dynamic_size;
-};
+class UprotoParserDynamicValueTests : public CoreDataTest<dynamic_test_data> {};
+INSTANTIATE_TEST_SUITE_P(DynamicParserTests, UprotoParserDynamicValueTests, dynamic_test_positive_values);
 
-class UprotoParserDynamicValueTests : public UprotoParserTests,
-    public testing::WithParamInterface<dynamic_test_data> {
-
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
-
-INSTANTIATE_TEST_SUITE_P(DynamicParserTests, UprotoParserDynamicValueTests, testing::Values(
-    dynamic_test_data { 0x00, 0x00, 1 },
-    dynamic_test_data { 0x01, 0x01, 1 },
-    dynamic_test_data { 0x40, 0x40, 1 },
-    dynamic_test_data { 0x7F, 0x7F, 1 },
-    dynamic_test_data { 0x0080, 0x8000, 2 },
-    dynamic_test_data { 0x0100, 0x8080, 2 },
-    dynamic_test_data { 0x407F, 0xBFFF, 2 },
-    dynamic_test_data { 0x00004080, 0xC0000000, 4 },
-    dynamic_test_data { 0x0080C100, 0xC0808080, 4 },
-    dynamic_test_data { 0x2000407F, 0xDFFFFFFF, 4 }
-));
-
-struct payload_test_data {
-    std::vector<uint8_t> payload;
-};
-
-class UprotoParserPayloadTests : public UprotoParserTests,
-    public testing::WithParamInterface<payload_test_data> {
-
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
-
-INSTANTIATE_TEST_SUITE_P(PayloadParserTests, UprotoParserPayloadTests, testing::Values(
-    payload_test_data { std::vector<uint8_t> { 0x00, 0x00 } }
-));
+class UprotoParserPayloadTests : public CoreDataTest<payload_test_data> {};
+INSTANTIATE_TEST_SUITE_P(PayloadParserTests, UprotoParserPayloadTests, payload_test_values);
 
 TEST_F(UprotoParserTests, Initialization) {
     uproto_parser_t* parser = uproto_parser_create();
@@ -150,7 +110,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageProperties_ChecksumEnabled) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
 
-    EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(parser, 0b00000000));
+    EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(parser, 0b00000010));
     EXPECT_TRUE(uproto_message_has_checksum(parser->parsing_message));
     EXPECT_FALSE(uproto_message_skips_checksum(parser->parsing_message));
 
@@ -161,7 +121,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageProperties_ChecksumDisabled) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
 
-    EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(parser, 0b00000010));
+    EXPECT_EQ(uproto_message_parser_result_ok, uproto_parser_parse_single(parser, 0b00000000));
     EXPECT_FALSE(uproto_message_has_checksum(parser->parsing_message));
     EXPECT_TRUE(uproto_message_skips_checksum(parser->parsing_message));
 
@@ -200,8 +160,7 @@ TEST_P(UprotoParserDynamicValueTests, ParseSingle_PayloadLength) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
     uproto_parser_parse_single(parser, 0b00000001);
-    uproto_parser_parse_single(parser, 0x80);
-    uproto_parser_parse_single(parser, 0x42);
+    uproto_parser_parse_single(parser, 0x20);
 
     std::vector<uint8_t> dynamic_buffer = dynamic_split_to_bytes(data.dynamic_value);
 
@@ -224,8 +183,7 @@ TEST_F(UprotoParserTests, ParseSingle_PayloadLength_ZeroLengthSkipsPayload) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
     uproto_parser_parse_single(parser, 0b00000001);
-    uproto_parser_parse_single(parser, 0x80);
-    uproto_parser_parse_single(parser, 0x42);
+    uproto_parser_parse_single(parser, 0x20);
 
     uproto_parser_parse_single(parser, 0x00);
 
@@ -244,9 +202,8 @@ TEST_P(UprotoParserPayloadTests, ParseSingle_Payload) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
     uproto_parser_parse_single(parser, 0b00000001);
-    uproto_parser_parse_single(parser, 0x80);
-    uproto_parser_parse_single(parser, 0x42);
-    for (const auto& value : dynamic_serialize_to_vector(data.payload.size())) {
+    uproto_parser_parse_single(parser, 0x20);
+    for (const auto& value : real_to_dynamic_vector(data.payload.size())) {
         uproto_parser_parse_single(parser, value);
     }
 
@@ -271,7 +228,7 @@ TEST_P(UprotoParserPayloadTests, ParseSingle_Payload) {
 TEST_F(UprotoParserTests, ParseSingle_Checksum_EmptyMessage) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
-    uproto_parser_parse_single(parser, 0b00000000);
+    uproto_parser_parse_single(parser, 0b00000010);
     uproto_parser_parse_single(parser, 0x00);
     uproto_parser_parse_single(parser, 0x00);
 
@@ -292,8 +249,8 @@ TEST_F(UprotoParserTests, ParseSingle_Checksum_EmptyMessage) {
 TEST_F(UprotoParserTests, ParseSingle_Checksum_ShortPayload) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
-    uproto_parser_parse_single(parser, 0b00000000);
-    uproto_parser_parse_single(parser, 0x42);
+    uproto_parser_parse_single(parser, 0b00000010);
+    uproto_parser_parse_single(parser, 0x30);
     uproto_parser_parse_single(parser, 0x04);
     uproto_parser_parse_single(parser, 0x01);
     uproto_parser_parse_single(parser, 0x02);
@@ -317,7 +274,7 @@ TEST_F(UprotoParserTests, ParseSingle_Checksum_ShortPayload) {
 TEST_F(UprotoParserTests, ParseSingle_MessageEnd_EmptyMessage) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
-    uproto_parser_parse_single(parser, 0b00000000);
+    uproto_parser_parse_single(parser, 0b00000010);
     uproto_parser_parse_single(parser, 0x00);
     uproto_parser_parse_single(parser, 0x00);
     uproto_parser_parse_single(parser, 0xF2);
@@ -339,7 +296,7 @@ TEST_F(UprotoParserTests, ParseSingle_MessageEnd_EmptyMessage) {
 TEST_F(UprotoParserTests, ParseSingle_MessageEnd_InvalidEnd) {
     uproto_parser_t* parser = uproto_parser_create();
     uproto_parser_parse_single(parser, uproto_message_start);
-    uproto_parser_parse_single(parser, 0b00000000);
+    uproto_parser_parse_single(parser, 0b00000010);
     uproto_parser_parse_single(parser, 0x00);
     uproto_parser_parse_single(parser, 0x00);
     uproto_parser_parse_single(parser, 0xF2);

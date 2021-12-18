@@ -12,6 +12,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/googletest ${CMAKE_
 #
 add_executable(uutils_tests
     main.cpp
+    uutils/test_core.cpp
 
     uutils/uproto/test_uproto_message.cpp
     uutils/uproto/test_uproto_parser.cpp

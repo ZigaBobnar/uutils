@@ -59,10 +59,9 @@ void debug_free(void *ptr) {
     memory_node_remove(ptr);
 }
 
-void memory_debug_print_report() {
+bool memory_debug_print_report() {
     if (total_allocated == 0 && nodes.size() == 0) {
-        // puts("No leakages detected.");
-        return;
+        return false;
     }
 
     puts("\n\n******** Memory leakage report ********");
@@ -77,4 +76,6 @@ void memory_debug_print_report() {
 
     total_allocated = 0;
     nodes.clear();
+
+    return true;
 }

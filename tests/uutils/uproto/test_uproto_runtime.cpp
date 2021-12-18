@@ -1,11 +1,8 @@
 #include <gtest/gtest.h>
+#include "../test_core.hpp"
 #include "uutils/uproto/uproto.h"
 
-class UprotoRuntimeTests : public testing::Test {
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
+class UprotoRuntimeTests : public CoreTest {};
 
 TEST_F(UprotoRuntimeTests, MessagesIntegration) {
     uproto_runtime_t* runtime = uproto_runtime_create();

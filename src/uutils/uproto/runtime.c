@@ -181,9 +181,9 @@ bool uproto_runtime_global_receive_adapter_action(uproto_runtime_t* runtime, upr
 bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     printf("=> Runtime receiving message\n");
     printf("  Message start: 0x%X\n", uproto_message_start);
-    printf("  Properties: 0x%X\n", message->message_properties);
-    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, dynamic_serialize(message->resource_id, NULL));
-    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  dynamic_serialize(message->payload_length, NULL));
+    printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
+    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
     if (message->payload_length == 0) {
         printf("  Payload: (none)\n");
     } else {
@@ -212,9 +212,9 @@ bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runt
 bool uproto_runtime_global_console_respond_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     printf("=> Runtime sending message\n");
     printf("  Message start: 0x%X\n", uproto_message_start);
-    printf("  Properties: 0x%X\n", message->message_properties);
-    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, dynamic_serialize(message->resource_id, NULL));
-    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  dynamic_serialize(message->payload_length, NULL));
+    printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
+    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
     if (message->payload_length == 0) {
         printf("  Payload: (none)\n");
     } else {

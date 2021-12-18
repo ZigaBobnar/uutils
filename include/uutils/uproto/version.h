@@ -4,13 +4,13 @@
 #include "uutils/uproto/core.h"
 
 const static uint8_t uproto_protocol_version_major = 0x00;
-const static uint8_t uproto_protocol_version_minor = 0x00;
-const static uint8_t uproto_protocol_version_patch = 0x01;
+const static uint8_t uproto_protocol_version_minor = 0x01;
+const static uint8_t uproto_protocol_version_patch = 0x00;
 
 struct uproto_version_info_t {
-    uint32_t major;
-    uint32_t minor;
-    uint32_t patch;
+    int64_t major;
+    int64_t minor;
+    int64_t patch;
 };
 
 __EXTERN_C_BEGIN

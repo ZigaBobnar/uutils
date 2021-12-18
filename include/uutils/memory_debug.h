@@ -27,8 +27,9 @@ void debug_free(void *ptr);
 
 /**
  * Show memory leakage report.
+ * @returns Whether any problems have been detected.
  */
-void memory_debug_print_report();
+bool memory_debug_print_report();
 
 __EXTERN_C_END
 

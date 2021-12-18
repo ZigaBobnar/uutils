@@ -2,6 +2,7 @@
 #define UUTILS_UPROTO_PARSER_H_
 
 #include "uutils/uproto/core.h"
+#include "uutils/dynamic_value.h"
 
 __EXTERN_C_BEGIN
 
@@ -27,6 +28,10 @@ struct uproto_parser_t {
     struct uproto_message_t* parsing_message;
 
     uproto_message_parser_state state;
+
+    dynamic_state_t message_properties_state;
+    dynamic_state_t resource_id_state;
+    dynamic_state_t payload_length_state;
 };
 
 uproto_parser_t* uproto_parser_create();

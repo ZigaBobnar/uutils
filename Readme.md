@@ -5,7 +5,7 @@ Collection of C and C++ utilities that can be used to accelerate the development
 Available utilities:
 - FIFO queue [fifo.h, fifo.hpp] - cyclic buffer that provides first-in first-out capabilities)
 - Checksum [checksum.h, checksum.hpp] - Calculate 8-bit sum of all bytes in the buffer
-- Dynamic numeric values [dynamic_value.h, dynamic_value.hpp] - Allows the transfer of arbitary sized numeric value by using most significant bits to increase the bitness of such number (e.g. allows uint64_t value 42 to be sent as single uint8_t value 42, while still allowing at least half uint64_t values to be encoded as 8 bytes). Learn more about this in the include file.
+- Dynamic numeric values [dynamic_value.h, dynamic_value.hpp] - Allows the transfer of arbitary sized numeric value by using most significant bits to increase the bitness of such number (e.g. allows int64_t value 24 to be sent as single uint8_t value 24, while still allowing lots of large int64_t values (we lose some bits with serializing) to be encoded as 8 bytes). Learn more about this in the include file.
 - uproto [uproto/uproto.h] - Simple protocol to allow data exchange between two embedded devices. It uses resource ids to determine where the message belongs (think of it as a channel that sinks messages). It also allows dynamicaly sized payload to be added, so each resource id can also receive or send data and parse it accordingly.
 
 ## Integrating into C/C++ project

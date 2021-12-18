@@ -1,12 +1,9 @@
 #include <gtest/gtest.h>
+#include "../test_core.hpp"
 #include "uutils/uproto/uproto.h"
 #include "uutils/checksum.h"
 
-class UprotoMessageTests : public testing::Test {
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
+class UprotoMessageTests : public CoreTest {};
 
 TEST_F(UprotoMessageTests, Create) {
     uproto_message_t* message = uproto_message_create();

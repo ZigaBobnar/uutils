@@ -1,104 +1,55 @@
 #include <gtest/gtest.h>
+#include "test_core.hpp"
 #include "uutils/dynamic_value.h"
 #include "uutils/dynamic_value.hpp"
 
-struct dynamic_test_data {
-    uint64_t real_value;
-    uint64_t dynamic_value;
-    uint8_t dynamic_size;
-};
+class DynamicValueTest : public CoreDataTest<dynamic_test_data> {};
+INSTANTIATE_TEST_SUITE_P(DynamicValueDataTests, DynamicValueTest, dynamic_test_values);
 
-void test_place_dynamic(uint64_t value, uint8_t size, uint8_t* buffer) {
-    if (size == 8) {
-        buffer[0] = (uint8_t)(value >> 56);
-        buffer[1] = (uint8_t)(value >> 48);
-        buffer[2] = (uint8_t)(value >> 40);
-        buffer[3] = (uint8_t)(value >> 32);
-        buffer[4] = (uint8_t)(value >> 24);
-        buffer[5] = (uint8_t)(value >> 16);
-        buffer[6] = (uint8_t)(value >> 8);
-        buffer[7] = (uint8_t)(value);
-    } else if (size == 4) {
-        buffer[0] = (uint8_t)(value >> 24);
-        buffer[1] = (uint8_t)(value >> 16);
-        buffer[2] = (uint8_t)(value >> 8);
-        buffer[3] = (uint8_t)(value);
-    } else if (size == 2) {
-        buffer[0] = (uint8_t)(value >> 8);
-        buffer[1] = (uint8_t)(value);
-    } else if (size == 1) {
-        buffer[0] = (uint8_t)(value);
-    } else {
-        EXPECT_TRUE(false);
-    }
-}
-
-class DynamicValueTest
-    : public testing::TestWithParam<dynamic_test_data> {
-    virtual void TearDown() {
-        memory_debug_print_report();
-    }
-};
-
-INSTANTIATE_TEST_SUITE_P(DynamicValueDataTests, DynamicValueTest, testing::Values(
-    dynamic_test_data { 0x00, 0x00, 1 },
-    dynamic_test_data { 0x01, 0x01, 1 },
-    dynamic_test_data { 0x40, 0x40, 1 },
-    dynamic_test_data { 0x7F, 0x7F, 1 },
-    dynamic_test_data { 0x0080, 0x8000, 2 },
-    dynamic_test_data { 0x0100, 0x8080, 2 },
-    dynamic_test_data { 0x407F, 0xBFFF, 2 },
-    dynamic_test_data { 0x00004080, 0xC0000000, 4 },
-    dynamic_test_data { 0x0080C100, 0xC0808080, 4 },
-    dynamic_test_data { 0x2000407F, 0xDFFFFFFF, 4 },
-    dynamic_test_data { 0x0000000020004080, 0xE000000000000000, 8 },
-    dynamic_test_data { 0x100000002000407F, 0xEFFFFFFFFFFFFFFF, 8 }
-));
-
-TEST_P(DynamicValueTest, Parse_DirectInput) {
+TEST_P(DynamicValueTest, ToReal_DirectInput) {
     dynamic_test_data data = GetParam();
 
     uint8_t dynamic_size;
-    EXPECT_EQ(data.real_value, dynamic_parse(data.dynamic_value, &dynamic_size));
+    EXPECT_EQ(data.real_value, dynamic_to_real(data.dynamic_value, &dynamic_size));
     EXPECT_EQ(data.dynamic_size, dynamic_size);
 }
 
-TEST_P(DynamicValueTest, Parse_Buffer) {
+TEST_P(DynamicValueTest, ToReal_NoBufferReference) {
+    dynamic_test_data data = GetParam();
+
+    EXPECT_EQ(data.real_value, dynamic_to_real(data.dynamic_value, nullptr));
+}
+
+TEST_P(DynamicValueTest, BufferToReal) {
     dynamic_test_data data = GetParam();
     uint8_t buffer[9];
     uint8_t* buffer_pos = nullptr;
     test_place_dynamic(data.dynamic_value, data.dynamic_size, buffer);
 
-    EXPECT_EQ(data.real_value, dynamic_parse_buffer(buffer, &buffer_pos));
+    EXPECT_EQ(data.real_value, dynamic_buffer_to_real(buffer, &buffer_pos));
     EXPECT_EQ(data.dynamic_size, buffer_pos - buffer + 1);
 }
 
-TEST_P(DynamicValueTest, Parse_NoBufferReference) {
-    dynamic_test_data data = GetParam();
-
-    EXPECT_EQ(data.real_value, dynamic_parse(data.dynamic_value, nullptr));
-}
-
-TEST_P(DynamicValueTest, Parse_RequiredBytes) {
+TEST_P(DynamicValueTest, ToReal_RequiredBytes) {
     dynamic_test_data data = GetParam();
     uint8_t buffer[9];
     test_place_dynamic(data.dynamic_value, data.dynamic_size, buffer);
 
-    EXPECT_EQ(data.dynamic_size, dynamic_parse_get_required_bytes(buffer[0]));
+    EXPECT_EQ(data.dynamic_size, dynamic_to_real_get_required_bytes(buffer[0]));
 }
 
-TEST_P(DynamicValueTest, Serialize) {
+TEST_P(DynamicValueTest, ToDynamic) {
     dynamic_test_data data = GetParam();
 
     uint8_t written_bytes;
-    EXPECT_EQ(data.dynamic_value, dynamic_serialize(data.real_value, &written_bytes));
+    EXPECT_EQ(data.dynamic_value, real_to_dynamic(data.real_value, &written_bytes));
     EXPECT_EQ(data.dynamic_size, written_bytes);
 }
 
-TEST_P(DynamicValueTest, SerializeRequiredBytes) {
+TEST_P(DynamicValueTest, ToDynamic_RequiredBytes) {
     dynamic_test_data data = GetParam();
 
-    EXPECT_EQ(data.dynamic_size, dynamic_serialize_get_required_bytes(data.real_value));
+    EXPECT_EQ(data.dynamic_size, real_to_dynamic_get_required_bytes(data.real_value));
 }
 
 TEST_P(DynamicValueTest, IntegrationTest) {
@@ -107,14 +58,14 @@ TEST_P(DynamicValueTest, IntegrationTest) {
     test_place_dynamic(data.dynamic_value, data.dynamic_size, buffer);
 
     uint8_t* parsed_ptr;
-    uint64_t real_value = dynamic_parse_buffer(buffer, &parsed_ptr);
+    uint64_t real_value = dynamic_buffer_to_real(buffer, &parsed_ptr);
 
     uint8_t serialized_size;
-    uint64_t serialized_dynamic = dynamic_serialize(real_value, &serialized_size);
+    uint64_t serialized_dynamic = real_to_dynamic(real_value, &serialized_size);
     EXPECT_EQ(data.dynamic_size, serialized_size);
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
 
-    uint64_t reparsed_value = dynamic_parse(serialized_dynamic, &serialized_size);
+    uint64_t reparsed_value = dynamic_to_real(serialized_dynamic, &serialized_size);
     EXPECT_EQ(data.real_value, reparsed_value);
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
 }
@@ -132,15 +83,15 @@ TEST_P(DynamicValueTest, IntegrationTest_VectorInterface) {
     std::vector<uint8_t> input_data = dynamic_split_to_bytes(data.dynamic_value);
     EXPECT_EQ(data.dynamic_size, input_data.size());
 
-    std::tuple<uint64_t, uint8_t> parsed_value = dynamic_parse(input_data);
+    std::tuple<uint64_t, uint8_t> parsed_value = dynamic_to_real(input_data);
     EXPECT_EQ(data.real_value, std::get<0>(parsed_value));
     EXPECT_EQ(data.dynamic_size, std::get<1>(parsed_value));
 
-    std::vector<uint8_t> serialized = dynamic_serialize_to_vector(std::get<0>(parsed_value));
+    std::vector<uint8_t> serialized = real_to_dynamic_vector(std::get<0>(parsed_value));
     EXPECT_EQ(input_data, serialized);
     EXPECT_EQ(data.dynamic_size, serialized.size());
 
-    std::tuple<uint64_t, uint8_t> reparsed_value = dynamic_parse(serialized);
+    std::tuple<uint64_t, uint8_t> reparsed_value = dynamic_to_real(serialized);
     EXPECT_EQ(data.real_value, std::get<0>(reparsed_value));
     EXPECT_EQ(data.dynamic_size, std::get<1>(reparsed_value));
 }
