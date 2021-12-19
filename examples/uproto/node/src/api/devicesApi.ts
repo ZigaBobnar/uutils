@@ -1,5 +1,7 @@
 import express from 'express';
+import { uproto_message } from '../uutils/uproto/message';
 import { DeviceModel } from '../models/device';
+import { uprotoService } from '../services/uproto.service';
 
 let router = express.Router();
 
@@ -59,6 +61,22 @@ router.delete('/:name', async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+});
+
+router.post('/:name/send', async (req, res, next) => {
+    const name = req.params.name;
+    const payload = req.body;
+
+    let message = new uproto_message();
+    message.message_properties = payload.message_properties;
+    message.resource_id = payload.resource_id;
+    message.payload = payload.payload;
+
+    uprotoService.sendToDevice(name, message);
+
+    res.json({
+        status: 'ok',
+    });
 });
 
 export default router;

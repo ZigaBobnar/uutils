@@ -5,6 +5,7 @@ import { engine } from 'express-handlebars';
 import mongoose from 'mongoose';
 import api from './api';
 import { DeviceModel } from './models/device';
+import { uprotoService } from './services/uproto.service';
 
 dotenv.config();
 const port = process.env.SERVER_PORT;
@@ -13,9 +14,13 @@ const app = express();
 
 mongoose.connect(process.env.MONGODB_URI, {}, () => {
     console.info('Connected to the database.');
+
+    uprotoService.initialize().then(() => {
+        console.info('Uproto service initialized.');
+    });
 });
 if (process.env.NODE_ENV == 'development') {
-    mongoose.set('debug', true);
+    // mongoose.set('debug', true);
 }
 
 app.set('view engine', 'hbs');
@@ -33,6 +38,12 @@ app.get('/', async (req, res) => {
     let items = await DeviceModel.find({}).lean();
 
     res.render('index', {devices:items});
+});
+app.get('/devices/:name', async (req, res) => {
+    const name = req.params.name;
+    let item = await DeviceModel.findOne({ name }).lean();
+
+    res.render('devices/device.hbs', {device:item});
 });
 
 app.use('/api', api);

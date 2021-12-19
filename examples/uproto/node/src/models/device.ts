@@ -1,13 +1,14 @@
 import { getModelForClass, prop, defaultClasses } from '@typegoose/typegoose';
 
-class Device extends defaultClasses.TimeStamps {
+export class Device extends defaultClasses.TimeStamps {
     @prop({ required: true, unique: true, index: true })
     public name!: string;
 
     @prop({ required: true })
     public type!: string;
+
+    @prop()
+    public configuration: any;
 }
 
-const DeviceModel = getModelForClass(Device);
-
-export { DeviceModel }
+export const DeviceModel = getModelForClass(Device);

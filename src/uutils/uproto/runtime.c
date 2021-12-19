@@ -1,5 +1,6 @@
 #include "uutils/uproto/runtime.h"
 #include <stdio.h>
+#include <string.h>
 #include "uutils/uproto/parser.h"
 #include "uutils/uproto/message.h"
 #include "uutils/uproto/version.h"
@@ -7,6 +8,12 @@
 
 uproto_runtime_t* uproto_runtime_create() {
     uproto_runtime_t* runtime = malloc(sizeof(uproto_runtime_t));
+
+    runtime->device_identifier = NULL;
+    runtime->application_identifier = NULL;
+    runtime->application_version.major = 1;
+    runtime->application_version.minor = 0;
+    runtime->application_version.patch = 0;
 
     runtime->parser = uproto_parser_create();
     for (uint8_t i = 0; i < UPROTO_RUNTIME_MAX_RECEIVE_ADAPTERS; ++i) {
@@ -16,7 +23,7 @@ uproto_runtime_t* uproto_runtime_create() {
         runtime->respond_adapters[i] = NULL;
     }
 
-    uproto_runtime_attach_receive_adapter(runtime, &uproto_runtime_global_receive_adapter_action);
+    uproto_runtime_attach_receive_adapter(runtime, &uproto_runtime_system_receive_adapter_action);
 
     return runtime;
 }
@@ -149,30 +156,75 @@ void uproto_runtime_remove_respond_adapter(uproto_runtime_t* runtime, uproto_mes
     }
 }
 
-bool uproto_runtime_global_receive_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
+bool uproto_runtime_system_receive_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     if (uproto_message_is_request(message)) {
-        if (message->resource_id == uproto_resource_id_protocol_version) {
-            uproto_message_t* response = uproto_message_create();
-            response->message_properties = message->message_properties;
-            response->resource_id = message->resource_id;
-            uproto_message_set_as_response_type(response);
+        if (message->resource_id == uproto_resource_id_do_nothing) {
+            return true;
+        } else if (message->resource_id == uproto_resource_id_echo_message) {
+            uproto_message_t* response = uproto_message_create_response_for_request(message);
+            if (response->payload_length > 0 && response->payload != NULL) {
+                size_t length = response->payload_length;
+                response->payload = malloc(length);
+                for (size_t i = 0; i < length; ++i) {
+                    response->payload[i] = message->payload[i];
+                }
+            }
+
+            uproto_runtime_respond_with_message(runtime, response);
+            return true;
+        } else if (message->resource_id == uproto_resource_id_system_initialize) {
+            return true;
+        } else if (message->resource_id == uproto_resource_id_system_status) {
+            uproto_message_t* response = uproto_message_create_response_for_request(message);
+            response->payload = malloc(1);
+            response->payload[0] = 1;
+
+            uproto_runtime_respond_with_message(runtime, response);
+            return true;
+        } else if (message->resource_id == uproto_protocol_version_major) {
+            uproto_message_t* response = uproto_message_create_response_for_request(message);
 
             uproto_version_info_t version = {
                 uproto_protocol_version_major,
                 uproto_protocol_version_minor,
                 uproto_protocol_version_patch,
             };
-
             response->payload = uproto_version_info_serialize(&version, &response->payload_length);
 
             uproto_runtime_respond_with_message(runtime, response);
-
             return true;
-        }/* else if (message->resource_id == uproto_resource_id_device_identifier_string) {
+        } else if (message->resource_id == uproto_resource_id_application_version) {
+            uproto_message_t* response = uproto_message_create_response_for_request(message);
+
+            response->payload = uproto_version_info_serialize(&runtime->application_version, &response->payload_length);
+
+            uproto_runtime_respond_with_message(runtime, response);
+            return true;
+        } else if (message->resource_id == uproto_resource_id_device_identifier_string) {
+            uproto_message_t* response = uproto_message_create_response_for_request(message);
+            static const char* default_device_identifier = "Generic uproto embedded device";
+
+            char* buffer = runtime->device_identifier != NULL ? runtime->device_identifier : default_device_identifier;
+
+            response->payload_length = (dynamic_real)strlen(buffer);
+            response->payload = malloc(response->payload_length);
+            strcpy(response->payload, buffer);
+
+            uproto_runtime_respond_with_message(runtime, response);
             return true;
         } else if (message->resource_id == uproto_resource_id_application_identifier_string) {
+            uproto_message_t* response = uproto_message_create_response_for_request(message);
+            static const char* default_application_identifier = "Generic uproto C runtime";
+
+            char* buffer = runtime->application_identifier != NULL ? runtime->application_identifier : default_application_identifier;
+
+            response->payload_length = (dynamic_real)strlen(buffer);
+            response->payload = malloc(response->payload_length);
+            strcpy(response->payload, buffer);
+
+            uproto_runtime_respond_with_message(runtime, response);
             return true;
-        }*/
+        }
     }
 
     return false;
