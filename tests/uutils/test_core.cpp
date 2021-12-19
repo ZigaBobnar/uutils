@@ -1,6 +1,7 @@
 #include "test_core.hpp"
 
 void test_place_dynamic(dynamic value, uint8_t size, uint8_t* buffer) {
+#if DYNAMIC_HAS_8B
     if (size == 8) {
         buffer[0] = (uint8_t)(value >> 56);
         buffer[1] = (uint8_t)(value >> 48);
@@ -10,15 +11,23 @@ void test_place_dynamic(dynamic value, uint8_t size, uint8_t* buffer) {
         buffer[5] = (uint8_t)(value >> 16);
         buffer[6] = (uint8_t)(value >> 8);
         buffer[7] = (uint8_t)(value);
-    } else if (size == 4) {
+    } else
+#endif
+#if DYNAMIC_HAS_4B
+    if (size == 4) {
         buffer[0] = (uint8_t)(value >> 24);
         buffer[1] = (uint8_t)(value >> 16);
         buffer[2] = (uint8_t)(value >> 8);
         buffer[3] = (uint8_t)(value);
-    } else if (size == 2) {
+    } else
+#endif
+#if DYNAMIC_HAS_2B
+    if (size == 2) {
         buffer[0] = (uint8_t)(value >> 8);
         buffer[1] = (uint8_t)(value);
-    } else if (size == 1) {
+    } else
+#endif
+    if (size == 1) {
         buffer[0] = (uint8_t)(value);
     } else {
         EXPECT_TRUE(false);

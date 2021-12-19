@@ -172,7 +172,7 @@ uint8_t dynamic_to_real_get_required_bytes(const uint8_t first_byte_input);
  * @param dynamic_value The combined dynamic value.
  * @returns The preamble.
  */
-uint8_t dynamic_find_preamble_byte(const uint64_t dynamic_value);
+uint8_t dynamic_find_preamble_byte(const dynamic dynamic_value);
 
 /**
  * Converts the value into dynamic value. The result is returned as single value that can be bit-shifted to obtain each byte.

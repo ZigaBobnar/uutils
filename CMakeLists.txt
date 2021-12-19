@@ -12,6 +12,10 @@ if(UUTILS_BUILD_TESTS)
     add_definitions(-DDEBUG)
 endif()
 
+if(DYNAMIC_MAX_SIZE)
+    add_definitions(-DDYNAMIC_MAX_SIZE=${DYNAMIC_MAX_SIZE})
+endif()
+
 add_subdirectory(src)
 
 if(UUTILS_BUILD_TESTS)
