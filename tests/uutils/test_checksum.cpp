@@ -77,15 +77,20 @@ TEST_P(ChecksumDynamicTest, SimpleDynamicValue) {
     uint8_t expected_checksum = 0;
     if (data.dynamic_size == 1) {
         expected_checksum += (uint8_t)data.dynamic_value;
+#if DYNAMIC_HAS_2B
     } else if (data.dynamic_size == 2) {
         expected_checksum += (uint8_t)(data.dynamic_value >> 8);
         expected_checksum += (uint8_t)(data.dynamic_value);
+#endif
+#if DYNAMIC_HAS_4B
     } else if (data.dynamic_size == 4) {
         expected_checksum += (uint8_t)(data.dynamic_value >> 24);
         expected_checksum += (uint8_t)(data.dynamic_value >> 16);
         expected_checksum += (uint8_t)(data.dynamic_value >> 8);
         expected_checksum += (uint8_t)(data.dynamic_value);
-    } else {
+#endif
+#if DYNAMIC_HAS_8B
+    } else if (data.dynamic_size == 8) {
         expected_checksum += (uint8_t)(data.dynamic_value >> 56);
         expected_checksum += (uint8_t)(data.dynamic_value >> 48);
         expected_checksum += (uint8_t)(data.dynamic_value >> 40);
@@ -94,6 +99,9 @@ TEST_P(ChecksumDynamicTest, SimpleDynamicValue) {
         expected_checksum += (uint8_t)(data.dynamic_value >> 16);
         expected_checksum += (uint8_t)(data.dynamic_value >> 8);
         expected_checksum += (uint8_t)(data.dynamic_value);
+#endif
+    } else {
+        ASSERT_TRUE(false);
     }
 
     ASSERT_EQ(expected_checksum, checksum_simple_dynamic_value(data.real_value));

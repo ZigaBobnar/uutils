@@ -58,14 +58,14 @@ TEST_P(DynamicValueTest, IntegrationTest) {
     test_place_dynamic(data.dynamic_value, data.dynamic_size, buffer);
 
     uint8_t* parsed_ptr;
-    uint64_t real_value = dynamic_buffer_to_real(buffer, &parsed_ptr);
+    dynamic_real real_value = dynamic_buffer_to_real(buffer, &parsed_ptr);
 
     uint8_t serialized_size;
-    uint64_t serialized_dynamic = real_to_dynamic(real_value, &serialized_size);
+    dynamic serialized_dynamic = real_to_dynamic(real_value, &serialized_size);
     EXPECT_EQ(data.dynamic_size, serialized_size);
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
 
-    uint64_t reparsed_value = dynamic_to_real(serialized_dynamic, &serialized_size);
+    dynamic_real reparsed_value = dynamic_to_real(serialized_dynamic, &serialized_size);
     EXPECT_EQ(data.real_value, reparsed_value);
     EXPECT_EQ(data.dynamic_value, serialized_dynamic);
 }
@@ -83,7 +83,7 @@ TEST_P(DynamicValueTest, IntegrationTest_VectorInterface) {
     std::vector<uint8_t> input_data = dynamic_split_to_bytes(data.dynamic_value);
     EXPECT_EQ(data.dynamic_size, input_data.size());
 
-    std::tuple<uint64_t, uint8_t> parsed_value = dynamic_to_real(input_data);
+    std::tuple<dynamic_real, uint8_t> parsed_value = dynamic_to_real(input_data);
     EXPECT_EQ(data.real_value, std::get<0>(parsed_value));
     EXPECT_EQ(data.dynamic_size, std::get<1>(parsed_value));
 
@@ -91,7 +91,7 @@ TEST_P(DynamicValueTest, IntegrationTest_VectorInterface) {
     EXPECT_EQ(input_data, serialized);
     EXPECT_EQ(data.dynamic_size, serialized.size());
 
-    std::tuple<uint64_t, uint8_t> reparsed_value = dynamic_to_real(serialized);
+    std::tuple<dynamic_real, uint8_t> reparsed_value = dynamic_to_real(serialized);
     EXPECT_EQ(data.real_value, std::get<0>(reparsed_value));
     EXPECT_EQ(data.dynamic_size, std::get<1>(reparsed_value));
 }

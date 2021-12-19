@@ -19,14 +19,20 @@ const uint8_t checksum_simple_combine(uint8_t previous_checksum, uint8_t* data, 
     return previous_checksum + checksum_simple(data, length);
 }
 
-const uint8_t checksum_simple_dynamic_value(uint64_t real_value) {
+const uint8_t checksum_simple_dynamic_value(dynamic_real real_value) {
     uint8_t dynamic_size;
     int64_t serialized_value = real_to_dynamic(real_value, &dynamic_size);
 
     return dynamic_size == 1 ? (uint8_t)serialized_value :
+#if DYNAMIC_HAS_2B
         dynamic_size == 2 ? (uint8_t)(serialized_value >> 8) + (uint8_t)(serialized_value) :
+#endif
+#if DYNAMIC_HAS_4B
         dynamic_size == 4 ? (uint8_t)(serialized_value >> 24) + (uint8_t)(serialized_value >> 16) + (uint8_t)(serialized_value >> 8) + (uint8_t)(serialized_value) :
+#endif
+#if DYNAMIC_HAS_8B
         dynamic_size == 8 ? (uint8_t)(serialized_value >> 56) + (uint8_t)(serialized_value >> 48) + (uint8_t)(serialized_value >> 40) + (uint8_t)(serialized_value >> 32) + (uint8_t)(serialized_value >> 24) + (uint8_t)(serialized_value >> 16) + (uint8_t)(serialized_value >> 8) + (uint8_t)(serialized_value) :
+#endif
         0;
 }
 

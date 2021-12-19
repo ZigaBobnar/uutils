@@ -2,6 +2,7 @@
 #define UUTILS_CHECKSUM_H_
 
 #include "common.h"
+#include "dynamic_value.h"
 
 __EXTERN_C_BEGIN
 
@@ -28,7 +29,7 @@ const uint8_t checksum_simple_combine(uint8_t previous_checksum, uint8_t* data, 
  * @param value The real (parsed) value.
  * @returns The checksum of serialized dynamic value.
  */
-const uint8_t checksum_simple_dynamic_value(uint64_t real_value);
+const uint8_t checksum_simple_dynamic_value(dynamic_real real_value);
 
 __EXTERN_C_END
 

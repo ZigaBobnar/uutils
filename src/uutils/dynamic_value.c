@@ -198,33 +198,33 @@ dynamic_real dynamic_buffer_to_real(uint8_t* input, uint8_t** out_ptr) {
 #endif
         1;
 
-    uint64_t dynamic_value = 0;
+    dynamic dynamic_value = 0;
     if (encoded_size == 1) {
         dynamic_value = *input;
 #if DYNAMIC_HAS_2B
     } else if (encoded_size == 2) {
         dynamic_value =
-            ((uint64_t)(*input) << 8) |
+            ((dynamic)(*input) << 8) |
             (*++input);
 #endif
 #if DYNAMIC_HAS_4B
     } else if (encoded_size == 4) {
         dynamic_value =
-            ((uint64_t)(*input) << 24) |
-            ((uint64_t)(*++input) << 16) |
-            ((uint64_t)(*++input) << 8) |
+            ((dynamic)(*input) << 24) |
+            ((dynamic)(*++input) << 16) |
+            ((dynamic)(*++input) << 8) |
             (*++input);
 #endif
 #if DYNAMIC_HAS_8B
     } else if (encoded_size == 8) {
         dynamic_value =
-            ((uint64_t)(*input) << 56) |
-            ((uint64_t)(*++input) << 48) |
-            ((uint64_t)(*++input) << 40) |
-            ((uint64_t)(*++input) << 32) |
-            ((uint64_t)(*++input) << 24) |
-            ((uint64_t)(*++input) << 16) |
-            ((uint64_t)(*++input) << 8) |
+            ((dynamic)(*input) << 56) |
+            ((dynamic)(*++input) << 48) |
+            ((dynamic)(*++input) << 40) |
+            ((dynamic)(*++input) << 32) |
+            ((dynamic)(*++input) << 24) |
+            ((dynamic)(*++input) << 16) |
+            ((dynamic)(*++input) << 8) |
             (*++input);
 #endif
     } else {
@@ -298,23 +298,23 @@ dynamic real_to_dynamic(const dynamic_real value, uint8_t* written_bytes) {
             return value;
 #if DYNAMIC_HAS_2B
         } else if (dynamic_size == 2) {
-            uint64_t a = (uint64_t)(value - dynamic_2b_pos_offset);
+            dynamic a = (dynamic)(value - dynamic_2b_pos_offset);
             a &= dynamic_2b_data_mask;
-            a |= ((uint64_t)dynamic_2b_preamble) << 8;
+            a |= ((dynamic)dynamic_2b_preamble) << 8;
             return a;
 #endif
 #if DYNAMIC_HAS_4B
         } else if (dynamic_size == 4) {
-            uint64_t a = (uint64_t)(value - dynamic_4b_pos_offset);
+            dynamic a = (dynamic)(value - dynamic_4b_pos_offset);
             a &= dynamic_4b_data_mask;
-            a |= ((uint64_t)dynamic_4b_preamble) << 24;
+            a |= ((dynamic)dynamic_4b_preamble) << 24;
             return a;
 #endif
 #if DYNAMIC_HAS_8B
         }  else if (dynamic_size == 8) {
-            uint64_t a = (uint64_t)(value - dynamic_8b_pos_offset);
+            dynamic a = (dynamic)(value - dynamic_8b_pos_offset);
             a &= dynamic_8b_data_mask;
-            a |= ((uint64_t)dynamic_8b_preamble) << 56;
+            a |= ((dynamic)dynamic_8b_preamble) << 56;
             return a;
 #endif
         } else {

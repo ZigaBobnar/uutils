@@ -180,10 +180,14 @@ bool uproto_runtime_global_receive_adapter_action(uproto_runtime_t* runtime, upr
 
 bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     printf("=> Runtime receiving message\n");
+#pragma warning(suppress: 4477)
     printf("  Message start: 0x%X\n", uproto_message_start);
-    printf("  Properties: 0x%I64X (Dynamic: 0x%I64X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
-    printf("  Resource id: 0x%I64X (Dynamic: 0x%I64X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
-    printf("  Payload length: 0x%I64X (Dynamic: 0x%I64X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
+#pragma warning(suppress: 4477)
+    printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+#pragma warning(suppress: 4477)
+    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
+#pragma warning(suppress: 4477)
+    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
     if (message->payload_length <= 0) {
         printf("  Payload: (none)\n");
     } else {
@@ -211,10 +215,14 @@ bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runt
 
 bool uproto_runtime_global_console_respond_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     printf("=> Runtime sending message\n");
+#pragma warning(suppress: 4477)
     printf("  Message start: 0x%X\n", uproto_message_start);
-    printf("  Properties: 0x%I64X (Dynamic: 0x%I64X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
-    printf("  Resource id: 0x%I64X (Dynamic: 0x%I64X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
-    printf("  Payload length: 0x%I64X (Dynamic: 0x%I64X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
+#pragma warning(suppress: 4477)
+    printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+#pragma warning(suppress: 4477)
+    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
+#pragma warning(suppress: 4477)
+    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
     if (message->payload_length <= 0) {
         printf("  Payload: (none)\n");
     } else {

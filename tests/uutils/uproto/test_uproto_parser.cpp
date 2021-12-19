@@ -203,7 +203,7 @@ TEST_P(UprotoParserPayloadTests, ParseSingle_Payload) {
     uproto_parser_parse_single(parser, uproto_message_start);
     uproto_parser_parse_single(parser, 0b00000001);
     uproto_parser_parse_single(parser, 0x20);
-    for (const auto& value : real_to_dynamic_vector(data.payload.size())) {
+    for (const auto& value : real_to_dynamic_vector((dynamic_real)data.payload.size())) {
         uproto_parser_parse_single(parser, value);
     }
 
