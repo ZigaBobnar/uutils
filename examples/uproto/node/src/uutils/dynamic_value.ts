@@ -77,134 +77,157 @@ export function split_dynamic_to_array(dynamic_value: number): number[] {
     }
 }
 
-class dynamic_value {
-    real_value: number;
+export function dynamic_array_to_real(dynamic_array: number[]): number {
+    const size = get_dynamic_size_from_preamble(dynamic_array[0]);
+    const is_negative = (dynamic_array[0] & 0b10000000) == 0b10000000;
 
-    constructor(real_value = 0) {
-        this.real_value = real_value;
-    }
-
-    parse_dynamic(dynamic_value: number): void {
-        const dynamic_array = split_dynamic_to_array(dynamic_value);
-
-        this.parse_dynamic_array(dynamic_array);
-    }
-
-    parse_dynamic_array(dynamic_array: number[]): number {
-        const size = get_dynamic_size_from_preamble(dynamic_array[0]);
-        const is_negative = (dynamic_array[0] & 0b10000000) == 0b10000000;
-
-        if (!is_negative) {
-            if (size == 1) {
-                this.real_value = dynamic_array[0];
-            } else if (size == 2) {
-                this.real_value = ((
-                    ((dynamic_array[0] & 0b00111111) << 8) |
-                    dynamic_array[1]) +
-                    64);
-            } else if (size == 4) {
-                this.real_value = ((
-                    ((dynamic_array[0] & 0b00011111) << 24) |
-                    ((dynamic_array[1]) << 16) |
-                    ((dynamic_array[2]) << 8) |
-                    (dynamic_array[3])) +
-                    8256);
-            } else {
-                throw 'Invalid size';
-            }
+    if (!is_negative) {
+        if (size == 1) {
+            return dynamic_array[0];
+        } else if (size == 2) {
+            return ((
+                ((dynamic_array[0] & 0b00111111) << 8) |
+                dynamic_array[1]) +
+                64);
+        } else if (size == 4) {
+            return ((
+                ((dynamic_array[0] & 0b00011111) << 24) |
+                ((dynamic_array[1]) << 16) |
+                ((dynamic_array[2]) << 8) |
+                (dynamic_array[3])) +
+                8256);
         } else {
-            if (size == 1) {
-                this.real_value = -(~dynamic_array[0] & 0b00111111) - 1;
-            } else if (size == 2) {
-                this.real_value = (
-                    (((~(~dynamic_array[0] & 0b00111111)) | 0b11000000) << 8) |
-                    (dynamic_array[1])) -
-                    64;
-            } else if (size == 4) {
-                console.log(dynamic_array);
-                this.real_value = (-(
-                    ((255-(255-(255-dynamic_array[0] & 0b00011111) | 0b11100000)) << 24) |
-                    ((255-dynamic_array[1]) << 16) |
-                    ((255-dynamic_array[2]) << 8) |
-                    ((255-dynamic_array[3]))) -
-                    8257);
-            } else {
-                throw 'Invalid size';
-            }
+            throw 'Invalid size';
         }
-
-        return size;
-    }
-
-    serialize(): number[] {
-        const size = this.get_serialized_length();
-
-        if (this.real_value >= 0) {
-            if (size == 1) {
-                return [ this.real_value ];
-            } else if (size == 2) {
-                let val = this.real_value - dynamic_2b_pos_offset;
-                val &= dynamic_2b_data_mask;
-                val |= dynamic_2b_preamble << 8;
-
-                return [
-                    (val >> 8) & byte_clamp,
-                    val & byte_clamp
-                ];
-            } else if (size == 4) {
-                let val = this.real_value - dynamic_4b_pos_offset;
-                val &= dynamic_4b_data_mask;
-                val |= dynamic_4b_preamble << 24;
-
-                return [
-                    (val >> 24) & byte_clamp,
-                    (val >> 16) & byte_clamp,
-                    (val >> 8) & byte_clamp,
-                    val & byte_clamp
-                ];
-            } else {
-                throw 'Invalid size';
-            }
+    } else {
+        if (size == 1) {
+            return -(~dynamic_array[0] & 0b00111111) - 1;
+        } else if (size == 2) {
+            return (
+                (((~(~dynamic_array[0] & 0b00111111)) | 0b11000000) << 8) |
+                (dynamic_array[1])) -
+                64;
+        } else if (size == 4) {
+            console.log(dynamic_array);
+            return (-(
+                ((255-(255-(255-dynamic_array[0] & 0b00011111) | 0b11100000)) << 24) |
+                ((255-dynamic_array[1]) << 16) |
+                ((255-dynamic_array[2]) << 8) |
+                ((255-dynamic_array[3]))) -
+                8257);
         } else {
-            if (size == 1) {
-                return [
-                    ((this.real_value << 8) >>> 8) & 0xFF
-                ];
-            } else if (size == 2) {
-                const real_val = this.real_value + dynamic_2b_pos_offset;
-                let val = [
-                    ((((real_val) >> 8) << 8) >>> 8) & 0xFF,
-                    (((real_val) << 8) >>> 8) & 0xFF,
-                ];
-                val[0] = ~((~val[0]) | dynamic_2b_preamble);
-                
-                return val;
-            } else if (size == 4) {
-                const real_val = this.real_value + dynamic_4b_pos_offset;
-                let val = [
-                    ((((real_val) >> 24) << 8) >>> 8) & 0xFF,
-                    ((((real_val) >> 16) << 8) >>> 8) & 0xFF,
-                    ((((real_val) >> 8) << 8) >>> 8) & 0xFF,
-                    (((real_val) << 8) >>> 8) & 0xFF,
-                ];
-
-                val[0] = ~((~val[0]) | dynamic_4b_preamble);
-
-                return val;
-            } else {
-                throw 'Invalid size';
-            }
+            throw 'Invalid size';
         }
-    }
-
-    get_serialized_length() {
-        return (
-            this.real_value > dynamic_4b_max || this.real_value < dynamic_4b_min ? 8 :
-            this.real_value > dynamic_2b_max || this.real_value < dynamic_2b_min ? 4 :
-            this.real_value > dynamic_1b_max || this.real_value < dynamic_1b_min ? 2 :
-            1
-        );
     }
 }
 
-export default dynamic_value;
+export function dynamic_to_real(dynamic_value: number): number {
+    const dynamic_array = split_dynamic_to_array(dynamic_value);
+
+    return dynamic_array_to_real(dynamic_array);
+}
+
+export function real_to_dynamic_array(real_value: number): number[] {
+    const size = real_to_dynamic_get_required_size(real_value);
+
+    if (real_value >= 0) {
+        if (size == 1) {
+            return [ real_value ];
+        } else if (size == 2) {
+            let val = real_value - dynamic_2b_pos_offset;
+            val &= dynamic_2b_data_mask;
+            val |= dynamic_2b_preamble << 8;
+
+            return [
+                (val >> 8) & byte_clamp,
+                val & byte_clamp
+            ];
+        } else if (size == 4) {
+            let val = real_value - dynamic_4b_pos_offset;
+            val &= dynamic_4b_data_mask;
+            val |= dynamic_4b_preamble << 24;
+
+            return [
+                (val >> 24) & byte_clamp,
+                (val >> 16) & byte_clamp,
+                (val >> 8) & byte_clamp,
+                val & byte_clamp
+            ];
+        } else {
+            throw 'Invalid size';
+        }
+    } else {
+        if (size == 1) {
+            return [
+                ((real_value << 8) >>> 8) & 0xFF
+            ];
+        } else if (size == 2) {
+            const real_val = real_value + dynamic_2b_pos_offset;
+            let val = [
+                ((((real_val) >> 8) << 8) >>> 8) & 0xFF,
+                (((real_val) << 8) >>> 8) & 0xFF,
+            ];
+            val[0] = ~((~val[0]) | dynamic_2b_preamble);
+            
+            return val;
+        } else if (size == 4) {
+            const real_val = real_value + dynamic_4b_pos_offset;
+            let val = [
+                ((((real_val) >> 24) << 8) >>> 8) & 0xFF,
+                ((((real_val) >> 16) << 8) >>> 8) & 0xFF,
+                ((((real_val) >> 8) << 8) >>> 8) & 0xFF,
+                (((real_val) << 8) >>> 8) & 0xFF,
+            ];
+
+            val[0] = ~((~val[0]) | dynamic_4b_preamble);
+
+            return val;
+        } else {
+            throw 'Invalid size';
+        }
+    }
+}
+
+export function real_to_dynamic_get_required_size(real_value: number): number {
+    return (
+        real_value > dynamic_4b_max || real_value < dynamic_4b_min ? 8 :
+        real_value > dynamic_2b_max || real_value < dynamic_2b_min ? 4 :
+        real_value > dynamic_1b_max || real_value < dynamic_1b_min ? 2 :
+        1
+    );
+}
+
+export class dynamic_parse_state {
+    required_number: number = 0;
+    cached_number: number = 0;
+    cache: number[] = [];
+    processed_real: number;
+
+    parse_dynamic_byte(dynamic_byte: number): boolean {
+        if (this.required_number == 0) {
+            this.required_number = get_dynamic_size_from_preamble(dynamic_byte);
+            this.cached_number = 0;
+            this.cache = [];
+        }
+
+        if (this.required_number == 1) {
+            this.processed_real = dynamic_to_real(dynamic_byte);
+            this.required_number = 0;
+
+            return true;
+        }
+
+        this.cache.push(dynamic_byte);
+        this.cached_number++;
+
+        if (this.cached_number == this.required_number) {
+            this.processed_real = dynamic_array_to_real(this.cache);
+            this.required_number = 0;
+
+            return true;
+        }
+
+        return false;
+    }
+}
+
