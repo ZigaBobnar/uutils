@@ -12,8 +12,8 @@ uproto_version_info_t uproto_version_info_parse(uint8_t* buffer, size_t max_leng
     return info;
 }
 
-uint8_t* uproto_version_info_serialize(uproto_version_info_t* info, uint32_t* length) {
-    uint32_t total_length =
+uint8_t* uproto_version_info_serialize(uproto_version_info_t* info, dynamic_real* length) {
+    dynamic_real total_length =
         real_to_dynamic_get_required_bytes(info->major) +
         real_to_dynamic_get_required_bytes(info->minor) +
         real_to_dynamic_get_required_bytes(info->patch);

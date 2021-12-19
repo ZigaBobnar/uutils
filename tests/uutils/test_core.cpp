@@ -1,6 +1,6 @@
 #include "test_core.hpp"
 
-void test_place_dynamic(int64_t value, uint8_t size, uint8_t* buffer) {
+void test_place_dynamic(dynamic value, uint8_t size, uint8_t* buffer) {
     if (size == 8) {
         buffer[0] = (uint8_t)(value >> 56);
         buffer[1] = (uint8_t)(value >> 48);

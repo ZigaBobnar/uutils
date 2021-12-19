@@ -99,13 +99,58 @@
 
 __EXTERN_C_BEGIN
 
+#define DYNAMIC_DEFAULT_MAX_SIZE 4
+
+#ifndef DYNAMIC_MAX_SIZE
+#define DYNAMIC_MAX_SIZE DYNAMIC_DEFAULT_MAX_SIZE
+#endif
+
+#if DYNAMIC_MAX_SIZE == 16
+#error 16 byte dynamic size is not available on this platform.
+#elif DYNAMIC_MAX_SIZE == 8
+typedef int64_t dynamic_real;
+typedef uint64_t dynamic;
+#elif DYNAMIC_MAX_SIZE == 4
+typedef int32_t dynamic_real;
+typedef uint32_t dynamic;
+#elif DYNAMIC_MAX_SIZE == 2
+typedef int16_t dynamic_real;
+typedef uint16_t dynamic;
+#elif (DYNAMIC_MAX_SIZE == 1) || (DYNAMIC_MAX_SIZE == 0)
+#error Dynamic max size is too small.
+#else
+#error Dynamic max size is invalid!
+#endif
+
+#define DYNAMIC_HAS_1B 1
+#if DYNAMIC_MAX_SIZE >= 2
+#define DYNAMIC_HAS_2B 1
+#else
+#define DYNAMIC_HAS_2B 0
+#endif
+#if DYNAMIC_MAX_SIZE >= 4
+#define DYNAMIC_HAS_4B 1
+#else
+#define DYNAMIC_HAS_4B 0
+#endif
+#if DYNAMIC_MAX_SIZE >= 8
+#define DYNAMIC_HAS_8B 1
+#else
+#define DYNAMIC_HAS_8B 0
+#endif
+#if DYNAMIC_MAX_SIZE >= 16
+#define DYNAMIC_HAS_16B 1
+#else
+#define DYNAMIC_HAS_16B 0
+#endif
+
 /**
  * Parses the dynamic value into real value.
  * @param input Input dynamic value.
  * @param out_ptr The pointer to where the dynamic size will be written.
  * @returns Parsed value.
  */
-int64_t dynamic_to_real(const uint64_t dynamic_input, uint8_t* dynamic_size_out);
+dynamic_real dynamic_to_real(const dynamic dynamic_input, uint8_t* dynamic_size_out);
 
 /**
  * Parses the dynamic value from buffer.
@@ -113,7 +158,7 @@ int64_t dynamic_to_real(const uint64_t dynamic_input, uint8_t* dynamic_size_out)
  * @param out_ptr The pointer to where the end address of dynamic value will be written.
  * @returns Parsed value.
  */
-int64_t dynamic_buffer_to_real(uint8_t* input, uint8_t** out_ptr);
+dynamic_real dynamic_buffer_to_real(uint8_t* input, uint8_t** out_ptr);
 
 /**
  * Calculates the required bytes to parse the value.
@@ -135,24 +180,24 @@ uint8_t dynamic_find_preamble_byte(const uint64_t dynamic_value);
  * @param  written_bytes The pointer to where the number of required bytes will be written.
  * @returns Combined converted value.
  */
-uint64_t real_to_dynamic(const int64_t value, uint8_t* written_bytes);
+dynamic real_to_dynamic(const dynamic_real value, uint8_t* written_bytes);
 
 /**
  * Calculates the required bytes to serialize the value into dynamic value.
  * @param value The input value.
  * @returns The required bytes count.
  */
-uint8_t real_to_dynamic_get_required_bytes(const int64_t value);
+uint8_t real_to_dynamic_get_required_bytes(const dynamic_real value);
 
-uint8_t real_to_dynamic_buffer(int64_t value, uint8_t* buffer);
+uint8_t real_to_dynamic_buffer(dynamic_real value, uint8_t* buffer);
 
 typedef struct _dynamic_state {
     uint8_t required_num;
     uint8_t cached_num;
-    uint8_t cache[8];
+    uint8_t cache[DYNAMIC_MAX_SIZE];
 } dynamic_state_t;
 
-bool dynamic_to_real_stateful(dynamic_state_t* state, uint8_t value, int64_t* return_ptr);
+bool dynamic_to_real_stateful(dynamic_state_t* state, uint8_t value, dynamic_real* return_ptr);
 
 __EXTERN_C_END
 

@@ -181,14 +181,14 @@ bool uproto_runtime_global_receive_adapter_action(uproto_runtime_t* runtime, upr
 bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     printf("=> Runtime receiving message\n");
     printf("  Message start: 0x%X\n", uproto_message_start);
-    printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
-    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
-    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
-    if (message->payload_length == 0) {
+    printf("  Properties: 0x%I64X (Dynamic: 0x%I64X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+    printf("  Resource id: 0x%I64X (Dynamic: 0x%I64X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
+    printf("  Payload length: 0x%I64X (Dynamic: 0x%I64X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
+    if (message->payload_length <= 0) {
         printf("  Payload: (none)\n");
     } else {
         printf("  Payload: ");
-        for (size_t i = 0; i < message->payload_length; ++i) {
+        for (size_t i = 0; i < (size_t)message->payload_length; ++i) {
             printf("0x%X ", message->payload[i]);
         }
         printf("\n");
@@ -199,7 +199,7 @@ bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runt
 
     size_t message_raw_size;
     uint8_t* serialized_message = uproto_message_serialize(message, &message_raw_size);
-    printf("  RAW message (%d bytes): ", message_raw_size);
+    printf("  RAW message (%d bytes): ", (int)message_raw_size);
     for (size_t i = 0; i < message_raw_size; ++i) {
         printf("0x%X ", serialized_message[i]);
     }
@@ -212,14 +212,14 @@ bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runt
 bool uproto_runtime_global_console_respond_adapter_action(uproto_runtime_t* runtime, uproto_message_t* message) {
     printf("=> Runtime sending message\n");
     printf("  Message start: 0x%X\n", uproto_message_start);
-    printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
-    printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
-    printf("  Payload length: 0x%X (Dynamic: 0x%X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
-    if (message->payload_length == 0) {
+    printf("  Properties: 0x%I64X (Dynamic: 0x%I64X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+    printf("  Resource id: 0x%I64X (Dynamic: 0x%I64X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
+    printf("  Payload length: 0x%I64X (Dynamic: 0x%I64X)\n", message->payload_length,  real_to_dynamic(message->payload_length, NULL));
+    if (message->payload_length <= 0) {
         printf("  Payload: (none)\n");
     } else {
         printf("  Payload: ");
-        for (size_t i = 0; i < message->payload_length; ++i) {
+        for (size_t i = 0; i < (size_t)message->payload_length; ++i) {
             printf("0x%X ", message->payload[i]);
         }
         printf("\n");
@@ -230,7 +230,7 @@ bool uproto_runtime_global_console_respond_adapter_action(uproto_runtime_t* runt
 
     size_t message_raw_size;
     uint8_t* serialized_message = uproto_message_serialize(message, &message_raw_size);
-    printf("  RAW message (%d bytes): ", message_raw_size);
+    printf("  RAW message (%d bytes): ", (int)message_raw_size);
     for (size_t i = 0; i < message_raw_size; ++i) {
         printf("0x%X ", serialized_message[i]);
     }

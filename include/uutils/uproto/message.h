@@ -2,6 +2,7 @@
 #define UUTILS_UPROTO_MESSAGE_H_
 
 #include "uutils/uproto/core.h"
+#include "uutils/dynamic_value.h"
 
 /**
  * uproto message structure:
@@ -57,9 +58,9 @@ typedef enum {
 } uproto_parse_status;
 
 struct uproto_message_t {
-    int64_t message_properties;
-    int64_t resource_id;
-    int64_t payload_length;
+    dynamic_real message_properties;
+    dynamic_real resource_id;
+    dynamic_real payload_length;
     uint8_t* payload;
     uint8_t checksum;
 

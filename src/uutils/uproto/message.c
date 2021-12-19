@@ -73,7 +73,8 @@ uint8_t uproto_message_calculate_checksum(uproto_message_t* message) {
     checksum += checksum_simple_dynamic_value(message->payload_length);
 
     if (message->payload_length > 0 && message->payload != NULL) {
-        for (size_t i = 0; i < message->payload_length; ++i) {
+        size_t length = (size_t)message->payload_length;
+        for (size_t i = 0; i < length; ++i) {
             checksum += message->payload[i];
         }
     }
@@ -107,7 +108,8 @@ uint8_t* uproto_message_serialize(uproto_message_t* message, size_t* size_ptr) {
     buffer_pos += real_to_dynamic_buffer(message->payload_length, buffer_pos);
 
     if (message->payload_length > 0) {
-        for (size_t i = 0; i < message->payload_length; ++i) {
+        size_t length = (size_t)message->payload_length;
+        for (size_t i = 0; i < length; ++i) {
             *buffer_pos++ = message->payload[i];
         }
     }

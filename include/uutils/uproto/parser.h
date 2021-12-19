@@ -32,6 +32,9 @@ struct uproto_parser_t {
     dynamic_state_t message_properties_state;
     dynamic_state_t resource_id_state;
     dynamic_state_t payload_length_state;
+
+    size_t current_payload_position;
+    size_t current_message_payload_length;
 };
 
 uproto_parser_t* uproto_parser_create();

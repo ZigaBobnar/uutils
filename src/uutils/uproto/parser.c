@@ -11,6 +11,8 @@ uproto_parser_t* uproto_parser_create() {
     parser->message_properties_state.required_num = 0;
     parser->resource_id_state.required_num = 0;
     parser->payload_length_state.required_num = 0;
+    parser->current_payload_position = 0;
+    parser->current_message_payload_length = 0;
 
     return parser;
 }
@@ -58,6 +60,12 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser,
     }
     case uproto_message_parser_state_payload_length: {
         if (dynamic_to_real_stateful(&parser->payload_length_state, value, &parser->parsing_message->payload_length)) {
+            if (parser->parsing_message->payload_length < 0) {
+                parser->state = uproto_message_parser_state_message_start;
+
+                return uproto_message_parser_result_unknown_error;
+            }
+
             parser->state = parser->parsing_message->payload_length > 0 ? 
                 uproto_message_parser_state_payload :
                 uproto_message_parser_state_checksum;
@@ -66,23 +74,23 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser,
         break;
     }
     case uproto_message_parser_state_payload: {
-        static size_t payload_position = 0;
-        static size_t message_payload_length = 0;
-
-        if (payload_position == 0) {
-             if (parser->parsing_message->payload_length == 0) {
+        if (parser->current_payload_position == 0) {
+             if (parser->parsing_message->payload_length <= 0) {
                  // Invalid state.
+                parser->state = uproto_message_parser_state_message_start;
+
+                return uproto_message_parser_result_unknown_error;
              }
 
-             message_payload_length = parser->parsing_message->payload_length;
-             parser->parsing_message->payload = malloc(message_payload_length);
+             parser->current_message_payload_length = (size_t)parser->parsing_message->payload_length;
+             parser->parsing_message->payload = malloc(parser->current_message_payload_length);
         }
 
-        parser->parsing_message->payload[payload_position++] = value;
+        parser->parsing_message->payload[parser->current_payload_position++] = value;
 
-        if (payload_position >= parser->parsing_message->payload_length) {
+        if (parser->current_payload_position >= parser->current_message_payload_length) {
             parser->state = uproto_message_parser_state_checksum;
-            payload_position = 0;
+            parser->current_payload_position = 0;
         }
 
         break;
