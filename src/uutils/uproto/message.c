@@ -7,6 +7,8 @@ uproto_message_t* uproto_message_create() {
 
     message->message_properties = 0;
     message->resource_id = 0;
+    message->device_id = 0;
+    message->sender_id = 0;
     message->payload_length = 0;
     message->payload = NULL;
     message->checksum = 0;
@@ -35,6 +37,11 @@ uproto_message_t* uproto_message_create_response_for_request(uproto_message_t* r
     uproto_message_set_as_response_type(response);
     response->resource_id = request->resource_id;
 
+    if (uproto_message_is_using_networking(request)) {
+        response->sender_id = request->device_id;
+        response->device_id = request->sender_id;
+    }
+
     return response;
 }
 
@@ -48,6 +55,10 @@ bool uproto_message_is_request(uproto_message_t* message) {
 
 bool uproto_message_is_response(uproto_message_t* message) {
     return (message->message_properties & uproto_message_property_request_response_mask) == uproto_message_property_request_response_mask;
+}
+
+bool uproto_message_is_using_networking(uproto_message_t* message) {
+    return (message->message_properties & uproto_message_property_use_networking_mask) == uproto_message_property_use_networking_mask;
 }
 
 void uproto_message_set_as_request_type(uproto_message_t* message) {
@@ -69,6 +80,11 @@ bool uproto_message_skips_checksum(uproto_message_t* message) {
 uint8_t uproto_message_calculate_checksum(uproto_message_t* message) {
     uint8_t checksum = uproto_message_start;
     checksum += checksum_simple_dynamic_value(message->message_properties);
+    if (uproto_message_is_using_networking(message)) {
+        // TODO: Requires the message to be complete
+        checksum += checksum_simple_dynamic_value(message->device_id);
+        checksum += checksum_simple_dynamic_value(message->sender_id);
+    }
     checksum += checksum_simple_dynamic_value(message->resource_id);
     checksum += checksum_simple_dynamic_value(message->payload_length);
 
@@ -87,8 +103,14 @@ bool uproto_message_is_checksum_valid(uproto_message_t* message, uint8_t checksu
 }
 
 uint8_t* uproto_message_serialize(uproto_message_t* message, size_t* size_ptr) {
+    // TODO: Finalize the message (calculate checksum, set networking params...)
+
     size_t message_length = 1 +
         real_to_dynamic_get_required_bytes(message->message_properties) +
+        (uproto_message_is_using_networking(message) ? (
+            real_to_dynamic_get_required_bytes(message->device_id) +
+            real_to_dynamic_get_required_bytes(message->sender_id)
+        ) : 0) +
         real_to_dynamic_get_required_bytes(message->resource_id) +
         real_to_dynamic_get_required_bytes(message->payload_length) +
         message->payload_length +
@@ -104,6 +126,12 @@ uint8_t* uproto_message_serialize(uproto_message_t* message, size_t* size_ptr) {
     *buffer_pos++ = uproto_message_start;
 
     buffer_pos += real_to_dynamic_buffer(message->message_properties, buffer_pos);
+
+    if (uproto_message_is_using_networking(message)) {
+        buffer_pos += real_to_dynamic_buffer(message->device_id, buffer_pos);
+        buffer_pos += real_to_dynamic_buffer(message->sender_id, buffer_pos);
+    }
+
     buffer_pos += real_to_dynamic_buffer(message->resource_id, buffer_pos);
     buffer_pos += real_to_dynamic_buffer(message->payload_length, buffer_pos);
 

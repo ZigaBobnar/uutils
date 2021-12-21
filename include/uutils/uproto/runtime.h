@@ -24,6 +24,10 @@ struct uproto_runtime_t {
     char* device_identifier;
     char* application_identifier;
     uproto_version_info_t application_version;
+#if UPROTO_ENABLE_NETWORKING
+    bool networking_enabled;
+    dynamic_real device_id;
+#endif
 
     uproto_parser_t* parser;
     uproto_message_adapter_t receive_adapters[UPROTO_RUNTIME_MAX_RECEIVE_ADAPTERS];

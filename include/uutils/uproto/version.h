@@ -5,7 +5,7 @@
 #include "uutils/dynamic_value.h"
 
 const static uint8_t uproto_protocol_version_major = 0x00;
-const static uint8_t uproto_protocol_version_minor = 0x01;
+const static uint8_t uproto_protocol_version_minor = 0x02;
 const static uint8_t uproto_protocol_version_patch = 0x00;
 
 struct uproto_version_info_t {

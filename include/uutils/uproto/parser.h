@@ -9,6 +9,8 @@ __EXTERN_C_BEGIN
 typedef enum {
     uproto_message_parser_state_message_start = 0,
     uproto_message_parser_state_message_properties,
+    uproto_message_parser_state_device_id,
+    uproto_message_parser_state_sender_id,
     uproto_message_parser_state_resource_id,
     uproto_message_parser_state_payload_length,
     uproto_message_parser_state_payload,
@@ -30,6 +32,8 @@ struct uproto_parser_t {
     uproto_message_parser_state state;
 
     dynamic_state_t message_properties_state;
+    dynamic_state_t device_id_state;
+    dynamic_state_t sender_id_state;
     dynamic_state_t resource_id_state;
     dynamic_state_t payload_length_state;
 

@@ -9,6 +9,8 @@ uproto_parser_t* uproto_parser_create() {
     parser->parsing_message = NULL;
     parser->ready_message = NULL;
     parser->message_properties_state.required_num = 0;
+    parser->device_id_state.required_num = 0;
+    parser->sender_id_state.required_num = 0;
     parser->resource_id_state.required_num = 0;
     parser->payload_length_state.required_num = 0;
     parser->current_payload_position = 0;
@@ -46,8 +48,36 @@ uproto_message_parser_result uproto_parser_parse_single(uproto_parser_t* parser,
         break;
     case uproto_message_parser_state_message_properties: {
         if (dynamic_to_real_stateful(&parser->message_properties_state, value, &parser->parsing_message->message_properties)) {
+            parser->state = uproto_message_is_using_networking(parser->parsing_message) ? uproto_message_parser_state_device_id : uproto_message_parser_state_resource_id;
+        }
+
+        break;
+    }
+    case uproto_message_parser_state_device_id: {
+#if UPROTO_ENABLE_NETWORKING
+        if (dynamic_to_real_stateful(&parser->message_properties_state, value, &parser->parsing_message->device_id)) {
+            parser->state = uproto_message_parser_state_sender_id;
+        }
+#else
+        static dynamic_real discard;
+        if (dynamic_to_real_stateful(&parser->message_properties_state, value, &discard)) {
+            parser->state = uproto_message_parser_state_sender_id;
+        }
+#endif
+
+        break;
+    }
+    case uproto_message_parser_state_sender_id: {
+#if UPROTO_ENABLE_NETWORKING
+        if (dynamic_to_real_stateful(&parser->sender_id_state, value, &parser->parsing_message->sender_id)) {
             parser->state = uproto_message_parser_state_resource_id;
         }
+#else
+        static dynamic_real discard;
+        if (dynamic_to_real_stateful(&parser->sender_id_state, value, &discard)) {
+            parser->state = uproto_message_parser_state_resource_id;
+        }
+#endif
 
         break;
     }

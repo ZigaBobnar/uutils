@@ -10,10 +10,18 @@
  * [1b] message_start = 0b00110011          -> uproto message start and type designator
  *                                              If the message start is not recognized, it will be discarded.
  *
- * [dynamic] message_params = 0b000000cr    -> The message parameters.
+ * [dynamic] message_params = 0b00000ncr    -> The message parameters.
  *                                              r specifies whether the message is request (r==0) or response (r==1)
  *                                              c specifies whether the message shall contain the checksum
+ *                                              n specifies whether the networking should be used
  *
+ * [dynamic] device_id                      -> The device ID in the network
+ *                                              Id 0 is considered as the main controller device (has the ownership over the network)
+ *                                              If networking is not used this is skipped
+ * 
+ * [dynamic] sender_id                      -> The device ID of the sender
+ *                                              If networking is not used this is skipped
+ * 
  * [dynamic] resource_id                    -> The resource ID
  *                                              Range 0x00-0x1F (0-31) is reserved for system use
  *                                              Range 0x8000-0xFFFF (32768-65535) is also reserved for system use
@@ -49,6 +57,7 @@ const static uint8_t uproto_message_end = 0b11001100;
 
 const static uint8_t uproto_message_property_request_response_mask = 0b00000001;
 const static uint8_t uproto_message_property_has_checksum_mask = 0b00000010;
+const static uint8_t uproto_message_property_use_networking_mask = 0b00000100;
 
 typedef enum {
     uproto_message_status_unknown = 0,
@@ -60,6 +69,10 @@ typedef enum {
 struct uproto_message_t {
     dynamic_real message_properties;
     dynamic_real resource_id;
+#if UPROTO_ENABLE_NETWORKING
+    dynamic_real device_id;
+    dynamic_real sender_id;
+#endif
     dynamic_real payload_length;
     uint8_t* payload;
     uint8_t checksum;
@@ -92,6 +105,7 @@ bool uproto_message_is_valid(const uproto_message_t* message);
 
 bool uproto_message_is_request(uproto_message_t* message);
 bool uproto_message_is_response(uproto_message_t* message);
+bool uproto_message_is_using_networking(uproto_message_t* message);
 
 void uproto_message_set_as_request_type(uproto_message_t* message);
 void uproto_message_set_as_response_type(uproto_message_t* message);

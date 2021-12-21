@@ -10,6 +10,12 @@ typedef struct uproto_version_info_t uproto_version_info_t;
 typedef struct uproto_message_t uproto_message_t;
 typedef struct uproto_parser_t uproto_parser_t;
 
+#define UPROTO_DEFAULT_ENABLE_NETWORKING true
+
+#ifndef UPROTO_ENABLE_NETWORKING
+#define UPROTO_ENABLE_NETWORKING UPROTO_DEFAULT_ENABLE_NETWORKING
+#endif
+
 __EXTERN_C_END
 
 #endif  // UUTILS_UPROTO_CORE_H_

@@ -14,6 +14,10 @@ uproto_runtime_t* uproto_runtime_create() {
     runtime->application_version.major = 1;
     runtime->application_version.minor = 0;
     runtime->application_version.patch = 0;
+#if UPROTO_ENABLE_NETWORKING
+    runtime->networking_enabled = false;
+    runtime->device_id = 0x00;
+#endif
 
     runtime->parser = uproto_parser_create();
     for (uint8_t i = 0; i < UPROTO_RUNTIME_MAX_RECEIVE_ADAPTERS; ++i) {
@@ -236,6 +240,14 @@ bool uproto_runtime_global_console_receive_adapter_action(uproto_runtime_t* runt
     printf("  Message start: 0x%X\n", uproto_message_start);
 #pragma warning(suppress: 4477)
     printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+#if UPROTO_ENABLE_NETWORKING
+    if (uproto_message_is_using_networking(message)) {
+#pragma warning(suppress: 4477)
+        printf("  Device id: 0x%X (Dynamic: 0x%X)\n", message->device_id, real_to_dynamic(message->device_id, NULL));
+#pragma warning(suppress: 4477)
+        printf("  Sender id: 0x%X (Dynamic: 0x%X)\n", message->sender_id, real_to_dynamic(message->sender_id, NULL));
+    }
+#endif
 #pragma warning(suppress: 4477)
     printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
 #pragma warning(suppress: 4477)
@@ -271,6 +283,14 @@ bool uproto_runtime_global_console_respond_adapter_action(uproto_runtime_t* runt
     printf("  Message start: 0x%X\n", uproto_message_start);
 #pragma warning(suppress: 4477)
     printf("  Properties: 0x%X (Dynamic: 0x%X)\n", message->message_properties, real_to_dynamic(message->message_properties, NULL));
+#if UPROTO_ENABLE_NETWORKING
+    if (uproto_message_is_using_networking(message)) {
+#pragma warning(suppress: 4477)
+        printf("  Device id: 0x%X (Dynamic: 0x%X)\n", message->device_id, real_to_dynamic(message->device_id, NULL));
+#pragma warning(suppress: 4477)
+        printf("  Sender id: 0x%X (Dynamic: 0x%X)\n", message->sender_id, real_to_dynamic(message->sender_id, NULL));
+    }
+#endif
 #pragma warning(suppress: 4477)
     printf("  Resource id: 0x%X (Dynamic: 0x%X)\n", message->resource_id, real_to_dynamic(message->resource_id, NULL));
 #pragma warning(suppress: 4477)

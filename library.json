@@ -1,6 +1,6 @@
 {
     "name": "uutils",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Collection of C and C++ utilities that can be used to accelerate the development of embedded projects by providing ready to use tested components.",
     "keywords": "",
     "repository": {
